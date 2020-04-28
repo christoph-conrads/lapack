@@ -75,7 +75,7 @@ set(DZLAUX
    dlasd0.f dlasd1.f dlasd2.f dlasd3.f dlasd4.f dlasd5.f dlasd6.f
    dlasd7.f dlasd8.f dlasda.f dlasdq.f dlasdt.f
    dlaset.f dlasq1.f dlasq2.f dlasq3.f dlasq4.f dlasq5.f dlasq6.f
-   dlasr.f  dlasrt.f dlassq.f90 dlasv2.f dlaisnan.f
+   dlasr.f  dlasrt.f dlasrti.f dlassq.f90 dlasv2.f dlaisnan.f
    dpttrf.f
    dstebz.f dstedc.f dstein.f dsteqr.f dsterf.f dstevx.f
    dlartgp.f dlartgs.f ../INSTALL/droundup_lwork.f
