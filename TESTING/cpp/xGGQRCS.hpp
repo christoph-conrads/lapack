@@ -298,7 +298,7 @@ std::pair<Real, Real> check_results(
 	auto& D2 = ds.second;
 	auto almost_A = assemble_matrix(U1, D1, X);
 	auto almost_B = assemble_matrix(U2, D2, X);
-	auto tol = [m, n, p] (const Matrix& A) {
+	auto tol = [](const Matrix& A) {
 		return 20 * std::max(A.size1(), A.size2()) * ublas::norm_frobenius(A) * eps;
 	};
 	auto backward_error_A = ublas::norm_frobenius(A - almost_A);
