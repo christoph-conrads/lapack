@@ -1443,25 +1443,53 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(switches, Number, types)
 BOOST_AUTO_TEST_CASE(regression_preprocessing_20210606)
 {
 	using Number = float;
-	using Real = typename tools::real_from<Number>::type;
+	using Matrix = ublas::matrix<Number, ublas::column_major>;
+
 	auto m = std::size_t{2};
 	auto n = std::size_t{7};
 	auto p = std::size_t{3};
-	auto rank_A = std::size_t{1};
-	auto rank_B = std::size_t{2};
-	auto rank_G = std::size_t{3};
-	auto hintprepa = 'N';
-	auto hintprepb = 'Y';
-	auto hintprepcols = 'Y';
-	auto w = std::ldexp(Real{1}, 11);
-	auto seed = std::uint32_t{1751626807};
-	xGGQRCS_test_switches_impl(
-		Number{0},
-		m, n, p, rank_A, rank_B, rank_G,
-		hintprepa, hintprepb, hintprepcols,
-		w,
-		seed
-	);
+	auto A = Matrix(m, n, Number{});
+	auto B = Matrix(p, n, Number{});
+
+	A(0, 0) = -1.2146358490e+00;
+	A(0, 1) = +3.7972930074e-01;
+	A(0, 2) = +9.3337267637e-02;
+	A(0, 3) = -4.9328170717e-02;
+	A(0, 4) = +1.1591043323e-01;
+	A(0, 5) = -3.5762786865e-07;
+	A(0, 6) = +4.6371135861e-02;
+
+	B(0, 0) = -3.3467432857e-01;
+	B(0, 1) = -1.2347420454e+00;
+	B(0, 2) = +9.5526170731e-01;
+	B(0, 3) = +1.8088394403e+00;
+	B(0, 4) = +1.7746002972e-01;
+	B(0, 5) = -2.9758486748e+00;
+	B(0, 6) = +1.5414557457e+00;
+	B(1, 0) = +5.1581972837e-01;
+	B(1, 1) = +2.5492978096e+00;
+	B(1, 2) = -1.8518075943e+00;
+	B(1, 3) = -3.2675864697e+00;
+	B(1, 4) = -4.0914654732e-02;
+	B(1, 5) = +4.5865530968e+00;
+	B(1, 6) = -1.9628678560e+00;
+	B(2, 0) = +5.6671768427e-02;
+	B(2, 1) = +9.4010317326e-01;
+	B(2, 2) = -5.9104621410e-01;
+	B(2, 3) = -8.4892463684e-01;
+	B(2, 4) = +2.3306103051e-01;
+	B(2, 5) = +5.0391203165e-01;
+	B(2, 6) = +2.0606298745e-01;
+
+	auto caller = ggqrcs::Caller<Number>(m, n, p);
+	ublas::subrange(caller.A, 0, m, 0, n) = A;
+	ublas::subrange(caller.B, 0, p, 0, n) = B;
+	caller.hint_preprocess_a = 'N';
+	caller.hint_preprocess_b = 'Y';
+	caller.hint_preprocess_cols = 'N';
+
+	auto ret = caller();
+	check_results(ret, A, B, caller);
 }
 
 
