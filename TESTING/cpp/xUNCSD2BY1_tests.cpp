@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 Christoph Conrads (https://christoph-conrads.name)
+ * Copyright (c) 2020-2021 Christoph Conrads
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -203,4 +203,67 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
 	xUNCSD2BY1_test_workspace_query_with_lrwork, Number, types)
 {
 	xUNCSD2BY1_test_workspace_query_with_lrwork_impl(Number{});
+}
+
+
+template<
+	typename Number,
+	typename std::enable_if<
+		std::is_fundamental<Number>::value, int
+	>::type* = nullptr
+>
+void xUNCSD2BY1_regression_20211024_impl(Number)
+{
+	using Real = typename tools::real_from<Number>::type;
+	using Matrix = ublas::matrix<Number, ublas::column_major>;
+
+	auto m = std::size_t{2};
+	auto n = std::size_t{3};
+	auto p = std::size_t{2};
+	auto ldq = m + p;
+	auto Q = Matrix(ldq, n);
+	auto eps = std::numeric_limits<Real>::epsilon();
+	// the magic value in the randomly generated test triggering this problem
+	// had a value of 2.66202983e-10 which is approximately eps / 448
+	// the value below is the smallest power of two triggering the problem
+	auto magic = std::ldexp(eps, -45);
+	Q(0,0) = 0; Q(0,1) = 1;     Q(0,2) = -magic;
+	Q(1,0) = 0; Q(1,1) = 0;     Q(1,2) = +magic;
+	Q(2,0) = 1; Q(2,1) = 0;     Q(2,2) = 0;
+	Q(3,0) = 0; Q(3,1) = magic; Q(3,2) = 1;
+
+	BOOST_VERIFY( tools::is_almost_isometric(Q) );
+
+	auto nan = tools::not_a_number<Number>::value;
+	auto real_nan = tools::not_a_number<Real>::value;
+	auto theta = ublas::vector<Real>(n, real_nan);
+	auto U1 = Matrix(m, m, nan);
+	auto U2 = Matrix(p, p, nan);
+	auto Qt = Matrix(n, n, nan);
+	auto lwork = 32 * ldq;
+	auto work = ublas::vector<Number>(lwork, nan);
+	auto iwork = ublas::vector<Integer>(m+p, -1);
+	auto ret = lapack::xUNCSD2BY1(
+		'Y', 'Y', 'Y',
+		m + p, m, n,
+		&Q(0, 0), ldq, &Q(m, 0), ldq,
+		&theta(0),
+		&U1(0,0), m, &U2(0,0), p, &Qt(0,0), n,
+		&work(0), lwork, &iwork(0)
+	);
+
+	BOOST_REQUIRE_EQUAL( ret, 0 );
+	BOOST_CHECK( tools::is_almost_isometric(U1) );
+	BOOST_CHECK( tools::is_almost_isometric(U2) );
+	BOOST_CHECK(
+		std::abs(U1(0, 0) - Real{1}) < 2*eps
+		|| std::abs(U1(0,1) - Real{1}) < 2 * eps
+	);
+}
+
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(
+	xUNCSD2BY1_regression_20211024, Number, lapack::supported_real_types)
+{
+	xUNCSD2BY1_regression_20211024_impl(Number{});
 }
