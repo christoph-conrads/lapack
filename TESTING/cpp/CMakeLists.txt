@@ -47,6 +47,7 @@ add_cxx_test(tools_tests tools_tests.cpp)
 add_cxx_test(xGGQRCS_tests xGGQRCS_tests.cpp)
 add_cxx_test(xLASRTI_tests xLASRTI_tests.cpp)
 add_cxx_test(xLASRTR_tests xLASRTR_tests.cpp)
+add_cxx_test(xUNBDB6_tests xUNBDB6_tests.cpp)
 add_cxx_test(xUNCSD2BY1_tests xUNCSD2BY1_tests.cpp)
 
 
