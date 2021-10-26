@@ -44,6 +44,9 @@
 
 extern "C"
 {
+	float snrm2_(lapack_int* n, const float* p, lapack_int* incx);
+	double dnrm2_(lapack_int* n, const double* p, lapack_int* incx);
+
 	void sgemm_(
 		char* transa, char* transb,
 		lapack_int* m, lapack_int* n, lapack_int* k,
@@ -1080,6 +1083,15 @@ inline integer_t xLASRTR(
 	return info;
 }
 
+
+
+float xNRM2(integer_t n, const float* x, integer_t incx) {
+	return snrm2_(&n, x, &incx);
+}
+
+double xNRM2(integer_t n, const double* x, integer_t incx) {
+	return dnrm2_(&n, x, &incx);
+}
 
 
 inline integer_t xPSTRF(
