@@ -261,6 +261,41 @@ extern "C"
 		lapack_int* info
 	);
 
+
+	void sorbdb6_(
+		lapack_int* m1,
+		lapack_int* m2,
+		lapack_int* n,
+		float* x1,
+		lapack_int* incx1,
+		float* x2,
+		lapack_int* incx2,
+		float* q1,
+		lapack_int* ldq1,
+		float* q2,
+		lapack_int* ldq2,
+		float* work,
+		lapack_int* lwork,
+		lapack_int* info
+	);
+
+	void dorbdb6_(
+		lapack_int* m1,
+		lapack_int* m2,
+		lapack_int* n,
+		double* x1,
+		lapack_int* incx1,
+		double* x2,
+		lapack_int* incx2,
+		double* q1,
+		lapack_int* ldq1,
+		double* q2,
+		lapack_int* ldq2,
+		double* work,
+		lapack_int* lwork,
+		lapack_int* info
+	);
+
 }
 
 
@@ -1169,6 +1204,36 @@ inline integer_t xUNBDB5(
 	return info;
 }
 
+
+inline integer_t xUNBDB6(
+	integer_t m1, integer_t m2, integer_t n,
+	float* x1, integer_t incx1,
+	float* x2, integer_t incx2,
+	float* q1, integer_t ldq1, float* q2, integer_t ldq2,
+	float* work, integer_t lwork)
+{
+	integer_t info = -1;
+	sorbdb6_(
+		&m1, &m2, &n, x1, &incx1, x2, &incx2, q1, &ldq1, q2, &ldq2,
+		work, &lwork, &info
+	);
+	return info;
+}
+
+inline integer_t xUNBDB6(
+	integer_t m1, integer_t m2, integer_t n,
+	double* x1, integer_t incx1,
+	double* x2, integer_t incx2,
+	double* q1, integer_t ldq1, double* q2, integer_t ldq2,
+	double* work, integer_t lwork)
+{
+	integer_t info = -1;
+	dorbdb6_(
+		&m1, &m2, &n, x1, &incx1, x2, &incx2, q1, &ldq1, q2, &ldq2,
+		work, &lwork, &info
+	);
+	return info;
+}
 
 
 inline integer_t xUNCSD2BY1(
