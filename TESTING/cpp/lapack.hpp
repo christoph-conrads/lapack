@@ -1085,11 +1085,11 @@ inline integer_t xLASRTR(
 
 
 
-float xNRM2(integer_t n, const float* x, integer_t incx) {
+inline float xNRM2(integer_t n, const float* x, integer_t incx) {
 	return snrm2_(&n, x, &incx);
 }
 
-double xNRM2(integer_t n, const double* x, integer_t incx) {
+inline double xNRM2(integer_t n, const double* x, integer_t incx) {
 	return dnrm2_(&n, x, &incx);
 }
 
