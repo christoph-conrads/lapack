@@ -256,8 +256,8 @@ void xUNCSD2BY1_regression_20211024_impl(Number)
 	BOOST_CHECK( tools::is_almost_isometric(U1) );
 	BOOST_CHECK( tools::is_almost_isometric(U2) );
 	BOOST_CHECK(
-		std::abs(U1(0, 0) - Real{1}) < 2*eps
-		|| std::abs(U1(0,1) - Real{1}) < 2 * eps
+		std::abs(std::abs(U1(0, 0)) - Real{1}) < 2*eps
+		|| std::abs(std::abs(U1(0,1)) - Real{1}) < 2 * eps
 	);
 }
 
