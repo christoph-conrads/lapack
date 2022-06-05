@@ -463,6 +463,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
 	auto m = 17;
 	auto n = 13;
 	auto p = 8;
+	auto hpa = '?';
+	auto hpb = '?';
+	auto hpc = '?';
 	auto rank = -1;
 	auto swapped_p = false;
 	auto a = Number{1};
@@ -472,14 +475,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
 	auto tol = Real{-1};
 	auto u1 = Number{0};
 	auto u2 = Number{0};
+	auto x = Number{0};
 	auto work = Number{0};
 	auto rwork = Real{0};
 	auto iwork = -1;
 	auto info = lapack::xGGQRCS(
-		'Y', 'Y', 'Y', m, n, p, &rank, &swapped_p,
+		'Y', 'Y', 'Y', &hpa, &hpb, &hpc, m, n, p, &rank, &swapped_p,
 		&a, m, &b, p,
 		&alpha, &beta,
-		&u1, m, &u2, p,
+		&u1, m, &u2, p, &x, m + p,
 		&tol,
 		&work, 1, &rwork, 1024, &iwork
 	);
@@ -487,10 +491,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
 	BOOST_CHECK_EQUAL(info, -20);
 
 	info = lapack::xGGQRCS(
-		'Y', 'Y', 'Y', m, n, p, &rank, &swapped_p,
+		'Y', 'Y', 'Y', &hpa, &hpb, &hpc, m, n, p, &rank, &swapped_p,
 		&a, m, &b, p,
 		&alpha, &beta,
-		&u1, m, &u2, p,
+		&u1, m, &u2, p, &x, m + p,
 		&tol,
 		&work, 1024, &rwork, 1, &iwork
 	);
@@ -752,6 +756,9 @@ void xGGQRCS_test_zero_dimensions_impl(
 	constexpr auto real_nan = tools::not_a_number<Real>::value;
 	constexpr auto one = std::size_t{1};
 
+	auto hpa = '?';
+	auto hpb = '?';
+	auto hpc = '?';
 	auto k = std::max(std::min(m + p, n), one);
 	auto rank = Integer{-1};
 	auto swapped_p = false;
@@ -765,6 +772,8 @@ void xGGQRCS_test_zero_dimensions_impl(
 	auto U1 = Matrix(ldu1, std::max(m, one), nan);
 	auto ldu2 = std::max(p, one);
 	auto U2 = Matrix(ldu2, std::max(p, one), nan);
+	auto ldx = std::max(m + p, one);
+	auto X = Matrix(ldx, std::max(n, one), nan);
 	auto tol = Real{0};
 	// this must be large enough not to trigger the workspace size check
 	auto lwork = std::max(4 * (m + p) * n, std::size_t{128});
@@ -772,10 +781,13 @@ void xGGQRCS_test_zero_dimensions_impl(
 	auto rwork = std::vector<Real>(lwork, real_nan);
 	auto iwork = std::vector<Integer>(lwork, -1);
 	auto ret = lapack::xGGQRCS(
-		'Y', 'Y', 'N', m, n, p, &rank, &swapped_p,
+		'Y', 'Y', 'N',
+		&hpa, &hpb, &hpc,
+		m, n, p, &rank, &swapped_p,
 		&A(0, 0), lda, &B(0, 0), ldb,
 		&alpha[0], &beta[0],
 		&U1(0, 0), 1, &U2(0, 0), 1,
+		&X(0, 0), 1,
 		&tol,
 		&work[0], work.size(), &rwork[0], rwork.size(), &iwork[0]
 	);
@@ -1495,7 +1507,8 @@ BOOST_AUTO_TEST_CASE(regression_preprocessing_20210606)
 
 // expect failures because xLANGE overflows when it should not
 BOOST_TEST_DECORATOR(* boost::unit_test::expected_failures(3))
-BOOST_AUTO_TEST_CASE_TEMPLATE(overflow_checks, Number, types)
+BOOST_AUTO_TEST_CASE_TEMPLATE(
+	overflow_checks, Number, lapack::supported_real_types)
 {
 	using Integer = lapack::integer_t;
 	using Real = typename tools::real_from<Number>::type;
@@ -1505,6 +1518,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(overflow_checks, Number, types)
 	// "big M" from linear programming: a large, positive value
 	constexpr auto M = std::numeric_limits<Real>::max();
 	constexpr auto nan = tools::not_a_number<Number>::value;
+	constexpr auto real_nan = tools::not_a_number<Real>::value;
 
 	auto jobu1 = 'N';
 	auto jobu2 = 'Y';
@@ -1524,8 +1538,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(overflow_checks, Number, types)
 	auto ldb = std::max(p, Integer{1});
 	auto b = Matrix(ldb, n);
 	auto zero_b = ZeroMatrix(ldb, n);
-	auto alpha = std::vector<Real>(rank_max, nan);
-	auto beta = std::vector<Real>(rank_max, nan);
+	auto alpha = std::vector<Real>(rank_max, real_nan);
+	auto beta = std::vector<Real>(rank_max, real_nan);
 	auto ldu1 = std::max(m, Integer{1});
 	auto u1 = Matrix(ldu1, m);
 	auto ldu2 = std::max(p, Integer{1});

@@ -518,13 +518,16 @@ struct Caller<std::complex<Real>>
 	bool compute_u1_p = true;
 	bool compute_u2_p = true;
 	bool compute_x_p = true;
+	char hint_preprocess_a = '?';
+	char hint_preprocess_b = '?';
+	char hint_preprocess_cols = '?';
 	Integer rank = -1;
 	bool swapped_p = false;
 	std::size_t m, n, p;
-	std::size_t lda, ldb, ldu1, ldu2;
+	std::size_t lda, ldb, ldu1, ldu2, ldx;
 	Real tol;
 	Matrix A, B;
-	Matrix U1, U2;
+	Matrix U1, U2, X;
 	Vector<Real> alpha, beta;
 	Vector<Number> work;
 	Vector<Real> rwork;
@@ -532,21 +535,22 @@ struct Caller<std::complex<Real>>
 
 
 	Caller(std::size_t m_, std::size_t n_, std::size_t p_)
-		: Caller(m_, n_, p_, m_, p_, m_, p_, true, true, true)
+		: Caller(
+			m_, n_, p_, m_, p_, m_, p_, std::min(m_ + p_, n_), true, true, true)
 	{}
 
 	Caller(
 		std::size_t m_, std::size_t n_, std::size_t p_,
 		std::size_t lda_, std::size_t ldb_,
-		std::size_t ldu1_, std::size_t ldu2_)
-		: Caller(m_, n_, p_, lda_, ldb_, ldu1_, ldu2_, true, true, true)
+		std::size_t ldu1_, std::size_t ldu2_, std::size_t ldx_)
+		: Caller(m_, n_, p_, lda_, ldb_, ldu1_, ldu2_, ldx_, true, true, true)
 	{}
 
 	Caller(
 		std::size_t m_, std::size_t n_, std::size_t p_,
 		bool compute_u1_p_, bool compute_u2_p_, bool compute_x_p_)
 		: Caller(
-			m_, n_, p_, m_, p_, m_, p_,
+			m_, n_, p_, m_, p_, m_, p_, std::min(m_ + p_, n_),
 			compute_u1_p_, compute_u2_p_, compute_x_p_
 		)
 	{}
@@ -554,7 +558,7 @@ struct Caller<std::complex<Real>>
 	Caller(
 		std::size_t m_, std::size_t n_, std::size_t p_,
 		std::size_t lda_, std::size_t ldb_,
-		std::size_t ldu1_, std::size_t ldu2_,
+		std::size_t ldu1_, std::size_t ldu2_, std::size_t ldx_,
 		bool compute_u1_p_, bool compute_u2_p_, bool compute_x_p_
 	) :
 		compute_u1_p(compute_u1_p_),
@@ -565,6 +569,7 @@ struct Caller<std::complex<Real>>
 		p(p_),
 		lda(lda_), ldb(ldb_),
 		ldu1(ldu1_), ldu2(ldu2_),
+		ldx(ldx_),
 		tol(-1),
 		A(lda, n, 0),
 		B(ldb, n, 0),
@@ -595,10 +600,12 @@ struct Caller<std::complex<Real>>
 		auto lrwork_opt_f = real_nan;
 		auto rank = Integer{-1};
 		auto ret = lapack::xGGQRCS(
-			jobu1, jobu2, jobx, m, n, p, &rank, &swapped_p,
+			jobu1, jobu2, jobx,
+			&hint_preprocess_a, &hint_preprocess_b, &hint_preprocess_cols,
+			m, n, p, &rank, &swapped_p,
 			&A(0, 0), lda, &B(0, 0), ldb,
 			&alpha(0), &beta(0),
-			&U1(0, 0), ldu1, &U2(0, 0), ldu2,
+			&U1(0, 0), ldu1, &U2(0, 0), ldu2, &X(0, 0), ldx,
 			&tol,
 			&lwork_opt_f, -1, &lrwork_opt_f, 1, &iwork(0) );
 		BOOST_REQUIRE_EQUAL( ret, 0 );
@@ -620,10 +627,14 @@ struct Caller<std::complex<Real>>
 		auto jobu2 = bool2lapackjob(compute_u2_p);
 		auto jobx = bool2lapackjob(compute_x_p);
 		return lapack::xGGQRCS(
-			jobu1, jobu2, jobx, m, n, p, &rank, &swapped_p,
+			jobu1, jobu2, jobx,
+			&hint_preprocess_a, &hint_preprocess_b, &hint_preprocess_cols,
+			m, n, p, &rank, &swapped_p,
 			&A(0, 0), lda, &B(0, 0), ldb,
 			&alpha(0), &beta(0),
-			&U1(0, 0), ldu1, &U2(0, 0), ldu2,
+			&U1(0, 0), ldu1,
+			&U2(0, 0), ldu2,
+			&X(0, 0), ldx,
 			&tol,
 			&work(0), work.size(),
 			&rwork(0), rwork.size(),
