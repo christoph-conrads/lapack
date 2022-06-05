@@ -115,50 +115,66 @@ extern "C"
 
 	void dggqrcs_(
 		char* jobu1, char* jobu2, char* jobx,
+		char* hint_preprocess_a, char* hint_preprocess_b,
+		char* hint_preprocess_cols,
 		lapack_int* m, lapack_int* n, lapack_int* p,
 		lapack_int* l, lapack_int* p_swapped_p,
 		double* A, lapack_int* lda, double* B, lapack_int* ldb,
 		double* alpha, double* beta,
-		double* U1, lapack_int* ldu1, double* U2, lapack_int* ldu2,
+		double* U1, lapack_int* ldu1,
+		double* U2, lapack_int* ldu2,
+		double* X, lapack_int* ldx,
 		double* tol,
 		double* work, lapack_int* lwork,
 		lapack_int* iwork,
 		lapack_int* info,
-		std::size_t jobu1_len, std::size_t jobu2_len, std::size_t jobqt_len
+		std::size_t jobu1_len, std::size_t jobu2_len, std::size_t jobqt_len,
+		std::size_t hint_preprocess_a_len, std::size_t hint_preprocess_b_len,
+		std::size_t hint_preprocess_cols_len
 	);
 
 	void cggqrcs_(
 		char* jobu1, char* jobu2, char* jobx,
+		char* hint_preprocess_a, char* hint_preprocess_b,
+		char* hint_preprocess_cols,
 		lapack_int* m, lapack_int* n, lapack_int* p,
-		lapack_int* l, lapack_int* swapped_p,
+		lapack_int* l, lapack_int* p_swapped_p,
 		std::complex<float>* A, lapack_int* lda,
 		std::complex<float>* B, lapack_int* ldb,
 		float* alpha, float* beta,
 		std::complex<float>* U1, lapack_int* ldu1,
 		std::complex<float>* U2, lapack_int* ldu2,
+		std::complex<float>* X, lapack_int* ldx,
 		float* tol,
 		std::complex<float>* work, lapack_int* lwork,
 		float* rwork, lapack_int* lrwork,
 		lapack_int* iwork,
 		lapack_int* info,
-		std::size_t jobu1_len, std::size_t jobu2_len, std::size_t jobqt_len
+		std::size_t jobu1_len, std::size_t jobu2_len, std::size_t jobqt_len,
+		std::size_t hint_preprocess_a_len, std::size_t hint_preprocess_b_len,
+		std::size_t hint_preprocess_cols_len
 	);
 
 	void zggqrcs_(
 		char* jobu1, char* jobu2, char* jobx,
+		char* hint_preprocess_a, char* hint_preprocess_b,
+		char* hint_preprocess_cols,
 		lapack_int* m, lapack_int* n, lapack_int* p,
-		lapack_int* l, lapack_int* swapped_p,
+		lapack_int* l, lapack_int* p_swapped_p,
 		std::complex<double>* A, lapack_int* lda,
 		std::complex<double>* B, lapack_int* ldb,
 		double* alpha, double* beta,
 		std::complex<double>* U1, lapack_int* ldu1,
 		std::complex<double>* U2, lapack_int* ldu2,
+		std::complex<double>* X, lapack_int* ldx,
 		double* tol,
 		std::complex<double>* work, lapack_int* lwork,
 		double* rwork, lapack_int* lrwork,
 		lapack_int* iwork,
 		lapack_int* info,
-		std::size_t jobu1_len, std::size_t jobu2_len, std::size_t jobqt_len
+		std::size_t jobu1_len, std::size_t jobu2_len, std::size_t jobqt_len,
+		std::size_t hint_preprocess_a_len, std::size_t hint_preprocess_b_len,
+		std::size_t hint_preprocess_cols_len
 	);
 
 
@@ -553,6 +569,7 @@ inline integer_t xGGQRCS(
 	assert( p_beta );
 	assert( p_tol );
 	assert( work );
+	assert( iwork );
 
 	integer_t info = -1;
 	integer_t swapped_p = -1;
@@ -573,108 +590,137 @@ inline integer_t xGGQRCS(
 
 inline integer_t xGGQRCS(
 	char jobu1, char jobu2, char jobx,
-	integer_t m, integer_t n, integer_t p, integer_t* p_l,
+	char* p_hint_preprocess_a, char* p_hint_preprocess_b,
+	char* p_hint_preprocess_cols,
+	integer_t m, integer_t n, integer_t p, integer_t* p_rank,
 	bool* p_swapped_p,
 	double* A, integer_t lda, double* B, integer_t ldb,
 	double* p_alpha, double* p_beta,
-	double* U1, integer_t ldu1, double* U2, integer_t ldu2,
+	double* U1, integer_t ldu1,
+	double* U2, integer_t ldu2,
+	double* X, integer_t ldx,
 	double* p_tol,
 	double* work, integer_t lwork,
 	integer_t* iwork)
 {
-	assert( p_l );
+	assert( p_hint_preprocess_a );
+	assert( p_hint_preprocess_b );
+	assert( p_hint_preprocess_cols );
+	assert( p_rank );
 	assert( p_swapped_p );
 	assert( p_alpha );
 	assert( p_beta );
 	assert( p_tol );
 	assert( work );
+	assert( iwork );
 
 	integer_t info = -1;
 	integer_t swapped_p = -1;
 	dggqrcs_(
 		&jobu1, &jobu2, &jobx,
-		&m, &n, &p, p_l, &swapped_p,
+		p_hint_preprocess_a, p_hint_preprocess_b, p_hint_preprocess_cols,
+		&m, &n, &p, p_rank, &swapped_p,
 		A, &lda, B, &ldb,
 		p_alpha, p_beta,
-		U1, &ldu1, U2, &ldu2,
+		U1, &ldu1, U2, &ldu2, X, &ldx,
 		p_tol,
 		work, &lwork,
 		iwork, &info,
-		1, 1, 1);
+		1, 1, 1, 1, 1, 1);
 	*p_swapped_p = swapped_p != 0;
 	return info;
 }
 
 inline integer_t xGGQRCS(
 	char jobu1, char jobu2, char jobx,
-	integer_t m, integer_t n, integer_t p, integer_t* p_l,
+	char* p_hint_preprocess_a, char* p_hint_preprocess_b,
+	char* p_hint_preprocess_cols,
+	integer_t m, integer_t n, integer_t p, integer_t* p_rank,
 	bool* p_swapped_p,
 	std::complex<float>* A, integer_t lda,
 	std::complex<float>* B, integer_t ldb,
 	float* p_alpha, float* p_beta,
 	std::complex<float>* U1, integer_t ldu1,
 	std::complex<float>* U2, integer_t ldu2,
+	std::complex<float>* X, integer_t ldx,
 	float* p_tol,
 	std::complex<float>* work, integer_t lwork,
 	float* rwork, integer_t lrwork,
 	integer_t* iwork)
 {
-	assert( p_l );
+	assert( p_hint_preprocess_a );
+	assert( p_hint_preprocess_b );
+	assert( p_hint_preprocess_cols );
+	assert( p_rank );
 	assert( p_swapped_p );
 	assert( p_alpha );
 	assert( p_beta );
 	assert( p_tol );
 	assert( work );
 	assert( rwork );
+	assert( iwork );
 
 	integer_t info = -1;
 	integer_t swapped_p = -1;
 	cggqrcs_(
 		&jobu1, &jobu2, &jobx,
-		&m, &n, &p, p_l, &swapped_p,
+		p_hint_preprocess_a, p_hint_preprocess_b, p_hint_preprocess_cols,
+		&m, &n, &p, p_rank, &swapped_p,
 		A, &lda, B, &ldb,
 		p_alpha, p_beta,
-		U1, &ldu1, U2, &ldu2,
+		U1, &ldu1, U2, &ldu2, X, &ldx,
 		p_tol,
-		work, &lwork, rwork, &lrwork, iwork, &info,
-		1, 1, 1);
+		work, &lwork,
+		rwork, &lrwork,
+		iwork, &info,
+		1, 1, 1, 1, 1, 1);
 	*p_swapped_p = swapped_p != 0;
 	return info;
 }
 
 inline integer_t xGGQRCS(
 	char jobu1, char jobu2, char jobx,
-	integer_t m, integer_t n, integer_t p, integer_t* p_l,
+	char* p_hint_preprocess_a, char* p_hint_preprocess_b,
+	char* p_hint_preprocess_cols,
+	integer_t m, integer_t n, integer_t p, integer_t* p_rank,
 	bool* p_swapped_p,
 	std::complex<double>* A, integer_t lda,
 	std::complex<double>* B, integer_t ldb,
 	double* p_alpha, double* p_beta,
 	std::complex<double>* U1, integer_t ldu1,
 	std::complex<double>* U2, integer_t ldu2,
+	std::complex<double>* X, integer_t ldx,
 	double* p_tol,
 	std::complex<double>* work, integer_t lwork,
 	double* rwork, integer_t lrwork,
 	integer_t* iwork)
 {
-	assert( p_l );
+	assert( p_hint_preprocess_a );
+	assert( p_hint_preprocess_b );
+	assert( p_hint_preprocess_cols );
+	assert( p_rank );
 	assert( p_swapped_p );
 	assert( p_alpha );
 	assert( p_beta );
 	assert( p_tol );
 	assert( work );
 	assert( rwork );
+	assert( iwork );
 
 	integer_t info = -1;
 	integer_t swapped_p = -1;
 	zggqrcs_(
 		&jobu1, &jobu2, &jobx,
-		&m, &n, &p, p_l, &swapped_p,
+		p_hint_preprocess_a, p_hint_preprocess_b, p_hint_preprocess_cols,
+		&m, &n, &p, p_rank, &swapped_p,
 		A, &lda, B, &ldb,
 		p_alpha, p_beta,
-		U1, &ldu1, U2, &ldu2,
+		U1, &ldu1, U2, &ldu2, X, &ldx,
 		p_tol,
-		work, &lwork, rwork, &lrwork, iwork, &info,
-		1, 1, 1);
+		work, &lwork,
+		rwork, &lrwork,
+		iwork, &info,
+		1, 1, 1, 1, 1, 1);
 	*p_swapped_p = swapped_p != 0;
 	return info;
 }
