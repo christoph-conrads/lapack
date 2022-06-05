@@ -311,7 +311,7 @@
    30       CONTINUE
    40    CONTINUE
 *
-         CALL CGEMM( 'No transpose', 'No transpose', M, N, K, -ONE,
+         CALL CGEMM( 'No transpose', 'No transpose', M, N, K, -CONE,
      $               U(1,M-K1-K+1), LDU, AF, LDA, ONE, A, LDA )
       ENDIF
 *
