@@ -16,7 +16,7 @@ add_compile_options(-Wextra -Wall -std=c++14 -pedantic)
 add_library(test_main OBJECT main.cpp)
 target_compile_definitions(test_main PUBLIC -DBOOST_TEST_DYN_LINK)
 # target_include_directories does not seem to do anything
-include_directories(${Boost_INCLUDE_DIR})
+#include_directories(${Boost_INCLUDE_DIR})
 
 
 
@@ -33,6 +33,7 @@ function(add_cxx_test target source_file)
 		PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
 		PRIVATE ${CMAKE_CURRENT_BINARY_DIR} # for config.hpp
 		PRIVATE ${CMAKE_SOURCE_DIR}/LAPACKE/include
+        PRIVATE ${CMAKE_BINARY_DIR}/include
 	)
 	target_link_libraries(
 		${target}
@@ -62,6 +63,7 @@ target_include_directories(
 	PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
 	PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
 	PRIVATE ${CMAKE_SOURCE_DIR}/LAPACKE/include
+    PRIVATE ${CMAKE_BINARY_DIR}/include
 )
 target_link_libraries(
 	gsvd_benchmarks
