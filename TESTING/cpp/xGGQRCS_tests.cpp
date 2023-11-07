@@ -1547,6 +1547,28 @@ BOOST_AUTO_TEST_CASE(regression_preprocessing_20231023)
 }
 
 
+BOOST_AUTO_TEST_CASE(regression_switches_20231107)
+{
+	auto dummy = float{0};
+	auto m = 3;
+	auto n = 3;
+	auto p = 3;
+	auto rank_A = 1;
+	auto rank_B = 2;
+	auto rank_G = 3;
+	auto hintprepa = 'N';
+	auto hintprepb = 'Y';
+	auto hintprepcols = 'N';
+	auto w = std::ldexp(float{2}, -20);
+	auto seed = UINT32_C(2538164553);
+
+	xGGQRCS_test_switches_impl(
+			dummy, m, n, p, rank_A, rank_B, rank_G,
+			hintprepa, hintprepb,
+			hintprepcols, w, seed);
+}
+
+
 // expect failures because xLANGE overflows when it should not
 BOOST_TEST_DECORATOR(* boost::unit_test::expected_failures(3))
 BOOST_AUTO_TEST_CASE_TEMPLATE(
