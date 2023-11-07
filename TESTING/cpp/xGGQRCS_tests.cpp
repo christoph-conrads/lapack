@@ -1505,6 +1505,48 @@ BOOST_AUTO_TEST_CASE(regression_preprocessing_20210606)
 }
 
 
+BOOST_AUTO_TEST_CASE(regression_preprocessing_20231023)
+{
+	auto m = 3;
+	auto n = 2;
+	auto p = 2;
+	//auto rank_A = 1;
+	//auto rank_B = 1;
+	//auto rank_G = 2;
+	auto hintprepa = 'Y';
+	auto hintprepb = 'Y';
+	auto hintprepcols = 'N';
+	auto caller = ggqrcs::Caller<float>(m, n, p);
+	auto A = caller.A;
+	auto B = caller.B;
+
+	A(0, 0) = -6.6977783203e+02;
+	A(0, 1) = -1.7713051758e+03;
+	A(1, 0) = +3.3091577148e+02;
+	A(1, 1) = +8.7514514160e+02;
+	A(2, 0) = +1.8713862610e+02;
+	A(2, 1) = +4.9490979004e+02;
+	B(0, 0) = +2.9615115625e+05;
+	B(0, 1) = +1.4119034375e+05;
+	B(1, 0) = -8.9898775000e+05;
+	B(1, 1) = -4.2859328125e+05;
+
+	caller.A = A;
+	caller.B = B;
+	caller.hint_preprocess_a = hintprepa;
+	caller.hint_preprocess_b = hintprepb;
+	caller.hint_preprocess_cols = hintprepcols;
+
+	auto ret = caller();
+
+	BOOST_REQUIRE_EQUAL(caller.hint_preprocess_a, 'Y');
+	BOOST_REQUIRE_EQUAL(caller.hint_preprocess_b, 'Y');
+	BOOST_REQUIRE_EQUAL(caller.hint_preprocess_cols, 'N');
+
+	check_results(ret, A, B, caller);
+}
+
+
 // expect failures because xLANGE overflows when it should not
 BOOST_TEST_DECORATOR(* boost::unit_test::expected_failures(3))
 BOOST_AUTO_TEST_CASE_TEMPLATE(
@@ -1764,5 +1806,3 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(xGGQRCS_test_xGGSVD3_comparison, Number, types)
 	}
 	}
 }
-
-
