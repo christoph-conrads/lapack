@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Christoph Conrads
+ * Copyright (c) 2020-2021, 2023 Christoph Conrads
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,7 @@
 #include <cstddef>
 #include <boost/assert.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
+#include <boost/numeric/ublas/matrix_proxy.hpp>
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/test/unit_test.hpp>
 
@@ -266,4 +267,70 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
 	xUNCSD2BY1_regression_20211024, Number, lapack::supported_real_types)
 {
 	xUNCSD2BY1_regression_20211024_impl(Number{});
+}
+
+
+BOOST_AUTO_TEST_CASE(xUNCSD2BY1_regression_20231026)
+{
+	using Number = float;
+	using Real = typename tools::real_from<Number>::type;
+	using Matrix = ublas::matrix<Number, ublas::column_major>;
+
+	auto m = std::size_t{2};
+	auto n = std::size_t{2};
+	auto p = std::size_t{1};
+	auto ldq = m + p;
+	auto Q = Matrix(ldq, n);
+	Q(0, 0) = -2.0392263e-01; Q(0, 1) = -9.7898704e-01;
+	Q(1, 0) =  1.1427624e-08; Q(1, 1) =  9.2925374e-09;
+	Q(2, 0) =  9.7898704e-01; Q(2, 1) = -2.0392257e-01;
+
+	BOOST_VERIFY( tools::is_almost_isometric(Q) );
+
+	auto nan = tools::not_a_number<Number>::value;
+	auto real_nan = tools::not_a_number<Real>::value;
+	auto theta = ublas::vector<Real>(n, real_nan);
+	auto Q_copy = Matrix(Q);
+	auto U1 = Matrix(m, m, nan);
+	auto U2 = Matrix(p, p, nan);
+	auto V = Matrix(n, n, nan);
+	auto lwork = 32 * ldq;
+	auto work = ublas::vector<Number>(lwork, nan);
+	auto iwork = ublas::vector<Integer>(m + p, -1);
+	auto ret = lapack::xUNCSD2BY1(
+		'Y', 'Y', 'Y',
+		m + p, m, n,
+		&Q_copy(0, 0), ldq, &Q_copy(m, 0), ldq,
+		&theta(0),
+		&U1(0, 0), m, &U2(0, 0), p, &V(0, 0), n,
+		&work(0), lwork, &iwork(0)
+	);
+
+	BOOST_REQUIRE_EQUAL( ret, 0 );
+	BOOST_CHECK( tools::is_almost_isometric(U1) );
+	BOOST_CHECK( tools::is_almost_isometric(U2) );
+	BOOST_CHECK( tools::is_almost_isometric(V) );
+
+	auto sigma_1 = Matrix(m, n);
+	auto sigma_2 = Matrix(p, n);
+
+	std::fill(sigma_1.data().begin(), sigma_1.data().end(), 0.0);
+	sigma_1(0, 0) = 1.0;
+	sigma_1(1, 1) = std::cos(theta(0));
+	sigma_2(0, 0) = 0.0;
+	sigma_2(0, 1) = std::sin(theta(0));
+
+	auto almost_Q = Matrix(m + p, n);
+
+	std::fill(almost_Q.data().begin(), almost_Q.data().end(), nan);
+	ublas::subrange(almost_Q, 0, m, 0, n) = prod(U1, Matrix(prod(sigma_1, V)));
+	ublas::subrange(almost_Q, m, m + p, 0, n) = prod(U2, Matrix(prod(sigma_2, V)));
+
+	BOOST_CHECK( tools::is_almost_isometric(almost_Q) );
+
+	auto eps = std::numeric_limits<Real>::epsilon();
+
+	BOOST_CHECK_LE(
+		ublas::norm_frobenius(Q - almost_Q), 2 * eps * ublas::norm_frobenius(Q)
+	);
 }
