@@ -891,7 +891,7 @@
             RETURN
          ENDIF
 *        Save upper half of elementary reflectors; this half will be
-*        re-used  by G
+*        re-used by G
          IF( WANTX ) THEN
             CALL SLACPY( 'L', ROWSA + ROWSB, COLS, WORK( IMAT ), LDG,
      $                   X( 1, RANK + 1 ), LDX )
