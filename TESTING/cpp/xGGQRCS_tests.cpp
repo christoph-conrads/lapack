@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 Christoph Conrads
+ * Copyright (c) 2020-2021, 2023 Christoph Conrads
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -1566,6 +1566,44 @@ BOOST_AUTO_TEST_CASE(regression_switches_20231107)
 			dummy, m, n, p, rank_A, rank_B, rank_G,
 			hintprepa, hintprepb,
 			hintprepcols, w, seed);
+}
+
+
+// U1 contains NaNs
+BOOST_AUTO_TEST_CASE(regression_switches_20231108)
+{
+	auto m = 3;
+	auto n = 6;
+	auto p = 3;
+	//auto rank_A = 1;
+	//auto rank_B = 1;
+	//auto rank_G = 2;
+	auto hintprepa = 'N';
+	auto hintprepb = 'Y';
+	auto hintprepcols = 'N';
+	//auto w = std::ldexp(float{1}, 9);
+	//auto seed = UINT32_C(2951424079);
+
+	auto caller = ggqrcs::Caller<float>(m, n, p);
+	caller.hint_preprocess_a = hintprepa;
+	caller.hint_preprocess_b = hintprepb;
+	caller.hint_preprocess_cols = hintprepcols;
+	auto A = caller.A;
+	auto B = caller.B;
+
+	A(0, 0) =  0.00000000; A(0, 1) =  0.00000000; A(0, 2) = 0.00000000; A(0, 3) = 0.00000000; A(0, 4) =  0.00000000;     A(0, 5) =  0.00000000;
+	A(1, 0) = -2084.21094; A(1, 1) = -470.370300; A(1, 2) = 782.985962; A(1, 3) = 977.149475; A(1, 4) = -2886.45068;     A(1, 5) =  581.008789;
+	A(2, 0) =  0.00000000; A(2, 1) =  0.00000000; A(2, 2) = 0.00000000; A(2, 3) = 0.00000000; A(2, 4) =  0.00000000;     A(2, 5) =  0.00000000;
+	B(0, 0) =  55.0295334; B(0, 1) =  98.2178268; B(0, 2) =-73.6211243; B(0, 3) = 68.5249176; B(0, 4) = -1.40125339E-04; B(0, 5) =  73.0102692;
+	B(1, 0) = -353.966553; B(1, 1) = -631.765686; B(1, 2) = 473.552643; B(1, 3) =-440.771881; B(1, 4) =  8.09960547E-05; B(1, 5) = -469.623108;
+	B(2, 0) =  1165.85156; B(2, 1) =  2080.83228; B(2, 2) =-1559.72949; B(2, 3) = 1451.76025; B(2, 4) = -3.09503201E-04; B(2, 5) =  1546.78687;
+
+	caller.A = A;
+	caller.B = B;
+
+	auto ret = caller();
+	check_results(ret, A, B, caller);
+
 }
 
 
