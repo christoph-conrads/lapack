@@ -1898,6 +1898,26 @@ BOOST_AUTO_TEST_CASE(regression_switches_20231111)
 }
 
 
+// U2 is inaccurate
+BOOST_AUTO_TEST_CASE(regression_switches_20231113)
+{
+	auto m = 2;
+	auto n = 11;
+	auto p = 3;
+	auto rank_A = 1;
+	auto rank_B = 2;
+	auto rank_G = 3;
+	auto hintprepa = 'N';
+	auto hintprepb = 'N';
+	auto hintprepcols = 'Y';
+	auto w = std::ldexp(float{1}, 23);
+	auto seed = UINT32_C(855203784);
+
+	xGGQRCS_test_switches_impl(
+			float{0}, m, n, p, rank_A, rank_B, rank_G, hintprepa, hintprepb, hintprepcols, w, seed);
+}
+
+
 // expect failures because xLANGE overflows when it should not
 BOOST_TEST_DECORATOR(* boost::unit_test::expected_failures(3))
 BOOST_AUTO_TEST_CASE_TEMPLATE(
