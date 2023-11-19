@@ -232,8 +232,10 @@
 *         * xLASCL cannot be used because of the vector increments and
 *         * the round-off error has a negligible impact on
 *           orthogonalization.
-         CALL SSCAL( M1, ONE / NORM, X1, INCX1 )
-         CALL SSCAL( M2, ONE / NORM, X2, INCX2 )
+         CALL SLASCL( 'General', -1, -1, NORM, ONE,
+     $                1, M1, X1, INCX1, CHILDINFO )
+         CALL SLASCL( 'General', -1, -1, NORM, ONE,
+     $                1, M2, X2, INCX2, CHILDINFO )
          CALL SORBDB6( M1, M2, N, X1, INCX1, X2, INCX2, Q1, LDQ1, Q2,
      $              LDQ2, WORK, LWORK, CHILDINFO )
 *
