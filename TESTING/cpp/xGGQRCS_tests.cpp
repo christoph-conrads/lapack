@@ -1918,6 +1918,77 @@ BOOST_AUTO_TEST_CASE(regression_switches_20231113)
 }
 
 
+// X contains NaN
+BOOST_AUTO_TEST_CASE(regression_switches_20231117)
+{
+	auto m = 4;
+	auto n = 5;
+	auto p = 4;
+	//auto rank_A = 3;
+	//auto rank_B = 3;
+	//auto rank_G = 5;
+	auto hintprepa = 'Y';
+	auto hintprepb = 'N';
+	auto hintprepcols = 'N';
+	//auto w = std::ldexp(float{1}, 17);
+	//auto seed = UINT32_C(3464537296);
+
+	auto caller = ggqrcs::Caller<float>(m, n, p);
+	auto A = caller.A;
+	auto B = caller.B;
+
+	A(0, 0) = -2.523180200e+07;
+	A(0, 1) = +1.762831200e+07;
+	A(0, 2) = -6.935665000e+06;
+	A(0, 3) = +1.278419600e+07;
+	A(0, 4) = +7.442814000e+06;
+	A(1, 0) = -1.920080800e+07;
+	A(1, 1) = +1.678079800e+07;
+	A(1, 2) = -3.421343500e+06;
+	A(1, 3) = +8.902876000e+06;
+	A(1, 4) = +1.717498500e+06;
+	A(2, 0) = -1.230522000e+06;
+	A(2, 1) = +8.881116000e+06;
+	A(2, 2) = +4.323080000e+06;
+	A(2, 3) = -8.483245000e+05;
+	A(2, 4) = -8.723171000e+06;
+	A(3, 0) = +3.979254000e+06;
+	A(3, 1) = -7.983786000e+06;
+	A(3, 2) = -1.871042500e+06;
+	A(3, 3) = -9.380397500e+05;
+	A(3, 4) = +4.800332500e+06;
+	B(0, 0) = +1.017645000e+07;
+	B(0, 1) = +3.476455750e+06;
+	B(0, 2) = +5.499623500e+06;
+	B(0, 3) = -1.525317400e+07;
+	B(0, 4) = -1.082843900e+07;
+	B(1, 0) = +8.011083000e+06;
+	B(1, 1) = +2.736736750e+06;
+	B(1, 2) = +4.329398500e+06;
+	B(1, 3) = -1.200757200e+07;
+	B(1, 4) = -8.524348000e+06;
+	B(2, 0) = +2.241878800e+07;
+	B(2, 1) = +7.658647000e+06;
+	B(2, 2) = +1.211571100e+07;
+	B(2, 3) = -3.360284000e+07;
+	B(2, 4) = -2.385511600e+07;
+	B(3, 0) = +7.864986000e+06;
+	B(3, 1) = +2.686812000e+06;
+	B(3, 2) = +4.250449500e+06;
+	B(3, 3) = -1.178858900e+07;
+	B(3, 4) = -8.368877000e+06;
+
+	caller.A = A;
+	caller.B = B;
+	caller.hint_preprocess_a = hintprepa;
+	caller.hint_preprocess_b = hintprepb;
+	caller.hint_preprocess_cols = hintprepcols;
+
+	auto ret = caller();
+	check_results(ret, A, B, caller);
+}
+
+
 // expect failures because xLANGE overflows when it should not
 BOOST_TEST_DECORATOR(* boost::unit_test::expected_failures(3))
 BOOST_AUTO_TEST_CASE_TEMPLATE(
