@@ -338,7 +338,7 @@ void print_machine_readable_matrix(const char* identifier, const Matrix& a) {
 
 	for(auto i = std::size_t{0}; i < a.size1(); ++i) {
 		for(auto j = std::size_t{0}; j < a.size2(); ++j) {
-			std::printf("%s(%zu, %zu) = %+16.10e;\n", identifier, i, j, a(i, j));
+			std::printf("%s(%zu, %zu) = %+15.9e;\n", identifier, i, j, a(i, j));
 		}
 	}
 }
