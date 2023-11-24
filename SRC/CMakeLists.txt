@@ -536,3 +536,9 @@ if(_is_coverage_build)
 endif()
 
 lapack_install_library(${LAPACKLIB})
+
+set_source_files_properties(
+	sbbcsd.f
+	PROPERTIES
+	COMPILE_FLAGS "-Warray-bounds -Wuninitialized -finit-real=snan -ffpe-trap=invalid"
+)
