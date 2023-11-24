@@ -537,8 +537,14 @@ endif()
 
 lapack_install_library(${LAPACKLIB})
 
+string (CONCAT COMPILE_FLAGS
+	"-Warray-bounds -Wuninitialized "
+	"-finit-real=snan -ffpe-trap=invalid "
+	"-Wextra -Wall -Wno-compare-reals -Wno-do-subscript"
+)
+
 set_source_files_properties(
-	sbbcsd.f
+	sbbcsd.f sorbdb1.f sorbdb2.f sorbdb3.f sorbdb4.f
 	PROPERTIES
-	COMPILE_FLAGS "-Warray-bounds -Wuninitialized -finit-real=snan -ffpe-trap=invalid"
+		COMPILE_FLAGS ${COMPILE_FLAGS}
 )
