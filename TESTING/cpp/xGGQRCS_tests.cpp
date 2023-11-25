@@ -1989,6 +1989,142 @@ BOOST_AUTO_TEST_CASE(regression_switches_20231117)
 }
 
 
+// Problem: X contains NaN.
+// This test uncovered two problems related to column pre-processing followed
+// by pre-processing of A, B, or both matrices:
+// * The numerical rank computed by the column pre-processing may be larger
+//   than the number of rows in A and B combined after pre-processing them.
+//   This was not handled correctly and caused SORGQR to abort because the
+//   number of elementary reflectors was too large for the given matrix
+//   dimensions.
+// * The column pre-processing code was mixing up the matrix dimensions M and P
+//   with the row ranks ROWSA and ROWSB, respectively.
+BOOST_AUTO_TEST_CASE(regression_switches_20231124)
+{
+	auto m = 2;
+	auto n = 14;
+	auto p = 5;
+	//auto rank_A = 1;
+	//auto rank_B = 4;
+	//auto rank_G = 5;
+	auto hintprepa = 'Y';
+	auto hintprepb = '?';
+	auto hintprepcols = '?';
+	//auto w = std::ldexp(float{1}, -17);
+	//auto seed = UINT32_C(2493622919);
+	auto caller = ggqrcs::Caller<float>(m, n, p);
+	auto A = caller.A;
+	auto B = caller.B;
+
+	A(0, 0) = +1.410665321e+01;
+	A(0, 1) = -1.911086202e+00;
+	A(0, 2) = -1.272614479e+01;
+	A(0, 3) = +6.018759727e+00;
+	A(0, 4) = -1.010638714e+01;
+	A(0, 5) = +7.009910583e+00;
+	A(0, 6) = +8.174458504e+00;
+	A(0, 7) = +3.823521137e+00;
+	A(0, 8) = +9.947698593e+00;
+	A(0, 9) = -7.558737278e+00;
+	A(0, 10) = +5.945141792e+00;
+	A(0, 11) = +1.320609283e+01;
+	A(0, 12) = +5.964776039e+00;
+	A(0, 13) = +8.835703850e+00;
+	A(1, 0) = +9.461766243e+00;
+	A(1, 1) = -1.281824350e+00;
+	A(1, 2) = -8.535817146e+00;
+	A(1, 3) = +4.036967754e+00;
+	A(1, 4) = -6.778665066e+00;
+	A(1, 5) = +4.701762676e+00;
+	A(1, 6) = +5.482861042e+00;
+	A(1, 7) = +2.564553499e+00;
+	A(1, 8) = +6.672227859e+00;
+	A(1, 9) = -5.069878101e+00;
+	A(1, 10) = +3.987589598e+00;
+	A(1, 11) = +8.857732773e+00;
+	A(1, 12) = +4.000759125e+00;
+	A(1, 13) = +5.926378727e+00;
+	B(0, 0) = -2.354245663e+00;
+	B(0, 1) = -1.274588227e+00;
+	B(0, 2) = -1.022671223e+00;
+	B(0, 3) = +3.332304239e+00;
+	B(0, 4) = -1.049327612e+00;
+	B(0, 5) = +6.667078733e-01;
+	B(0, 6) = -2.975541115e+00;
+	B(0, 7) = +5.985876083e+00;
+	B(0, 8) = +2.940188408e+00;
+	B(0, 9) = +1.365854263e+00;
+	B(0, 10) = -1.094935179e+00;
+	B(0, 11) = +2.838111401e+00;
+	B(0, 12) = -4.488838673e+00;
+	B(0, 13) = -1.741097569e+00;
+	B(1, 0) = -1.748939514e+01;
+	B(1, 1) = -1.145000935e+00;
+	B(1, 2) = -1.172084427e+01;
+	B(1, 3) = +1.768215561e+01;
+	B(1, 4) = -5.721320629e+00;
+	B(1, 5) = -3.447908878e+00;
+	B(1, 6) = -1.173703575e+01;
+	B(1, 7) = +2.050516891e+01;
+	B(1, 8) = +1.636666298e+01;
+	B(1, 9) = +4.553931236e+00;
+	B(1, 10) = +2.183465481e+00;
+	B(1, 11) = +1.269914436e+01;
+	B(1, 12) = -1.865117836e+01;
+	B(1, 13) = -9.262999535e+00;
+	B(2, 0) = -5.253398895e+00;
+	B(2, 1) = +7.169449806e+00;
+	B(2, 2) = -7.242753983e+00;
+	B(2, 3) = -1.073216319e+00;
+	B(2, 4) = +1.535561681e-01;
+	B(2, 5) = -8.618588448e+00;
+	B(2, 6) = +5.833065033e+00;
+	B(2, 7) = -1.547105980e+01;
+	B(2, 8) = -2.641206980e-02;
+	B(2, 9) = -3.680519581e+00;
+	B(2, 10) = +9.968990326e+00;
+	B(2, 11) = -3.754071236e+00;
+	B(2, 12) = +7.662865162e+00;
+	B(2, 13) = +5.316901803e-01;
+	B(3, 0) = +2.875819921e+00;
+	B(3, 1) = -8.103443384e-01;
+	B(3, 2) = +2.421998501e+00;
+	B(3, 3) = -2.058942080e+00;
+	B(3, 4) = +6.919430494e-01;
+	B(3, 5) = +1.574810505e+00;
+	B(3, 6) = +6.860893965e-01;
+	B(3, 7) = -4.968056679e-01;
+	B(3, 8) = -2.034287691e+00;
+	B(3, 9) = -7.783091068e-02;
+	B(3, 10) = -1.596852064e+00;
+	B(3, 11) = -1.082203865e+00;
+	B(3, 12) = +1.303767562e+00;
+	B(3, 13) = +1.082668185e+00;
+	B(4, 0) = +2.451035690e+01;
+	B(4, 1) = -8.808799744e+00;
+	B(4, 2) = +2.158485031e+01;
+	B(4, 3) = -1.593167973e+01;
+	B(4, 4) = +5.423389435e+00;
+	B(4, 5) = +1.534188271e+01;
+	B(4, 6) = +3.478024006e+00;
+	B(4, 7) = +1.242296219e+00;
+	B(4, 8) = -1.608663750e+01;
+	B(4, 9) = +6.148226261e-01;
+	B(4, 10) = -1.596782017e+01;
+	B(4, 11) = -7.307264328e+00;
+	B(4, 12) = +7.753322601e+00;
+	B(4, 13) = +8.388458252e+00;
+
+	caller.A = A;
+	caller.B = B;
+	caller.hint_preprocess_a = hintprepa;
+	caller.hint_preprocess_b = hintprepb;
+	caller.hint_preprocess_cols = hintprepcols;
+
+	auto ret = caller();
+	check_results(ret, A, B, caller);
+}
+
 // expect failures because xLANGE overflows when it should not
 BOOST_TEST_DECORATOR(* boost::unit_test::expected_failures(3))
 BOOST_AUTO_TEST_CASE_TEMPLATE(
