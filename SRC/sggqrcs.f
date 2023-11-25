@@ -853,7 +853,7 @@
 *     Remove unnecessary matrix columns
 *
       IF( PREPROCESSCOLS ) THEN
-*        assert!( 2 * (m + p) <= n );
+*        assert!( m + p <= n );
          CALL SGETRP( M, N, A, LDA, WORK( IMAT ), LDG, INFO )
          IF( INFO.NE.0 ) THEN
             RETURN
@@ -893,8 +893,8 @@
 *        Save upper half of elementary reflectors; this half will be
 *        re-used by G
          IF( WANTX ) THEN
-            CALL SLACPY( 'L', ROWSA + ROWSB, COLS, WORK( IMAT ), LDG,
-     $                   X( 1, RANK + 1 ), LDX )
+            CALL SLACPY( 'L', M + P, COLS, WORK( IMAT ), LDG,
+     $                   X( 1, COLS + 1 ), LDX )
          ENDIF
       ENDIF
 *
@@ -959,9 +959,14 @@
          CALL SLACPY( 'A', P, COLS, B, LDB, WORK( IG21 ), LDG )
       END IF
 *
+*
 *     Compute QR decomposition of G
 *
       IF( PREPROCESSCOLS ) THEN
+*        The rank determined by the pre-processing of A, B may be
+*        different from the rank determined by the column
+*        pre-processing.
+         RANK = MIN( ROWSA + ROWSB, RANK )
 *        assert!( COLS < N );
          CALL SGEQRF( ROWSA + ROWSB, COLS, WORK( IG11 ), LDG,
      $                WORK( ITAUGR ),
@@ -987,6 +992,9 @@
             RANK = RANK + 1
          END DO
       ENDIF
+*
+*     assert!( RANK >= 0 );
+*     assert!( RANK <= COLS );
 *
 *     Handle rank=0 case
 *
@@ -1021,7 +1029,6 @@
       ENDIF
 *
 *     Explicitly form Q1 so that we can compute the CS decomposition
-*
 *
       CALL SORGQR( ROWSA + ROWSB, RANK, RANK, WORK( IG11 ), LDG,
      $             WORK( ITAUGR ),
@@ -1089,15 +1096,15 @@
       IF( WANTX ) THEN
 *        Move upper half of elementary reflectors of LQ back
          IF( PREPROCESSCOLS ) THEN
-            CALL SLACPY( 'L', ROWSA + ROWSB, COLS, X( 1,RANK + 1 ), LDX,
+            CALL SLACPY( 'L', M + P, RANK, X( 1, COLS + 1 ), LDX,
      $                   WORK( IG11 ), LDG )
 *           Debug
-            CALL SLASET( 'A', RANK, N - RANK, NAN, NAN,
-     $                   X( 1, RANK + 1 ), LDX )
+            CALL SLASET( 'A', M + P, COLS - RANK, NAN, NAN,
+     $                   X( 1, COLS + 1 ), LDX )
          ENDIF
 *
          IF ( RANK.LE.M ) THEN
-            IF( COLS.GT.RANK ) THEN
+           IF( COLS.GT.RANK ) THEN
                CALL SGEMM( 'N', 'N', RANK, COLS - RANK, RANK,
      $                     1.0E0, X, LDX, A( 1, RANK + 1 ), LDA,
      $                     0.0E0, X( 1, RANK + 1 ), LDX )
