@@ -2125,6 +2125,32 @@ BOOST_AUTO_TEST_CASE(regression_switches_20231124)
 	check_results(ret, A, B, caller);
 }
 
+
+// X contains NaN.
+//
+// This problem is caused by the computations of a Householder reflector with
+// SLARFG*P* inside SORBDB1.
+BOOST_AUTO_TEST_CASE(regression_switches_20231125)
+{
+	auto m = 5;
+	auto n = 21;
+	auto p = 5;
+	auto rank_A = 1;
+	auto rank_B = 3;
+	auto rank_G = 4;
+	auto hintprepa = 'N';
+	auto hintprepb = 'N';
+	auto hintprepcols = 'Y';
+	auto w = std::ldexp(float{1}, -16);
+	auto seed = UINT32_C(2046152628);
+
+	xGGQRCS_test_switches_impl(
+		float{0}, m, n, p, rank_A, rank_B, rank_G, hintprepa, hintprepb,
+		hintprepcols, w, seed
+	);
+}
+
+
 // expect failures because xLANGE overflows when it should not
 BOOST_TEST_DECORATOR(* boost::unit_test::expected_failures(3))
 BOOST_AUTO_TEST_CASE_TEMPLATE(
