@@ -164,7 +164,6 @@
 *>           = 0:  successful exit.
 *>           < 0:  if INFO = -i, the i-th argument had an illegal value.
 *> \endverbatim
-*>
 *
 *  Authors:
 *  ========
@@ -217,21 +216,21 @@
 *  ====================================================================
 *
 *     .. Parameters ..
-      REAL               ONE
-      PARAMETER          ( ONE = 1.0E0 )
+      REAL               ONE, ZERO, REALZERO
+      PARAMETER          ( ONE = 1.0E0, ZERO = 0.0E0, REALZERO = 0.0E0 )
 *     ..
 *     .. Local Scalars ..
-      REAL               C, S
+      REAL               C, S, EPS, NORM, MINNORM
       INTEGER            CHILDINFO, I, ILARF, IORBDB5, LLARF, LORBDB5,
      $                   LWORKMIN, LWORKOPT
       LOGICAL            LQUERY
 *     ..
 *     .. External Subroutines ..
-      EXTERNAL           SLARF, SLARFGP, SORBDB5, SROT, XERBLA
+      EXTERNAL           SLARF, SLARFGP, SLASET, SORBDB5, SROT, XERBLA
 *     ..
 *     .. External Functions ..
-      REAL               SNRM2
-      EXTERNAL           SNRM2
+      REAL               SLAMCH, SNRM2
+      EXTERNAL           SLAMCH, SNRM2
 *     ..
 *     .. Intrinsic Function ..
       INTRINSIC          ATAN2, COS, MAX, SIN, SQRT
@@ -276,12 +275,35 @@
          RETURN
       END IF
 *
+      EPS = SLAMCH( 'Precision' )
+*     If the first entry of a vector is positive and the vector is small
+*     in norm, then xLARFGP might overflow or compute inaccurate
+*     results. Vectors with a norm smaller than MINNORM are directly set
+*     to zero to work around this problem.
+      MINNORM = EPS**2
+*
 *     Reduce columns 1, ..., Q of X11 and X21
 *
       DO I = 1, Q
 *
-         CALL SLARFGP( P-I+1, X11(I,I), X11(I+1,I), 1, TAUP1(I) )
-         CALL SLARFGP( M-P-I+1, X21(I,I), X21(I+1,I), 1, TAUP2(I) )
+         NORM = SNRM2( P-I+1, X11(I,I), 1 )
+         IF( X11(I,I).GT.REALZERO .AND. NORM.LT.MINNORM ) THEN
+            CALL SLASET( 'G', P-I+1, 1, ZERO, ZERO,
+     $                   X11(I,I), LDX11 )
+            TAUP1( I ) = ZERO
+         ELSE
+            CALL SLARFGP( P-I+1, X11(I,I), X11(I+1,I), 1, TAUP1(I) )
+         END IF
+*
+         NORM = SNRM2( M-P-I+1, X21(I,I), 1 )
+         IF( X21(I,I).GT.REALZERO .AND. NORM.LT.MINNORM ) THEN
+            CALL SLASET( 'G', M-P-I+1, 1, ZERO, ZERO,
+     $                    X21(I,I), LDX21 )
+            TAUP2( I ) = ZERO
+         ELSE
+            CALL SLARFGP( M-P-I+1, X21(I,I), X21(I+1,I), 1, TAUP2(I) )
+         END IF
+*
          THETA(I) = ATAN2( X21(I,I), X11(I,I) )
          C = COS( THETA(I) )
          S = SIN( THETA(I) )
@@ -294,7 +316,17 @@
 *
          IF( I .LT. Q ) THEN
             CALL SROT( Q-I, X11(I,I+1), LDX11, X21(I,I+1), LDX21, C, S )
-            CALL SLARFGP( Q-I, X21(I,I+1), X21(I,I+2), LDX21, TAUQ1(I) )
+*
+            NORM = SNRM2( Q-I, X21(I,I+1), LDX21 )
+            IF( X21(I,I+1).GT.REALZERO .AND. NORM.LT.MINNORM ) THEN
+               CALL SLASET( 'G', 1, Q-I, ZERO, ZERO,
+     $                      X21(I,I+1), LDX21 )
+               TAUQ1( I ) = ZERO
+            ELSE
+               CALL SLARFGP( Q-I, X21(I,I+1), X21(I,I+2), LDX21,
+     $                       TAUQ1(I) )
+            END IF
+*
             S = X21(I,I+1)
             X21(I,I+1) = ONE
             CALL SLARF( 'R', P-I, Q-I, X21(I,I+1), LDX21, TAUQ1(I),
