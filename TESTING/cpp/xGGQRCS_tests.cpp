@@ -1423,8 +1423,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(switches, Number, types)
 	auto log2_w_dist =
 		std::uniform_int_distribution<int>(-num_digits_2, +num_digits_2);
 
-	for(auto m = std::size_t{0}; m < 4; ++m) {
-	for(auto p = std::size_t{0}; p < 4; ++p) {
+	for(auto m = std::size_t{0}; m < 6; ++m) {
+	for(auto p = std::size_t{0}; p < 6; ++p) {
 	for(auto n = std::size_t{0}; n <= 2 * (m + p) + 1; ++n) {
 	for(auto rank_A = std::size_t{0}; rank_A < std::min(m, n); ++rank_A) {
 	for(auto rank_B = std::size_t{0}; rank_B < std::min(p, n); ++rank_B) {
@@ -1434,7 +1434,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(switches, Number, types)
 	for(auto hintprepa : PREPROCESSING_HINTS) {
 	for(auto hintprepb : PREPROCESSING_HINTS) {
 	for(auto hintprepcols : PREPROCESSING_HINTS) {
-		for(auto iteration = 0u; iteration < 1u; ++iteration)
+		for(auto iteration = 0u; iteration < 1000u; ++iteration)
 		{
 			auto seed = seed_dist(gen);
 			auto log2_w = log2_w_dist(gen);
