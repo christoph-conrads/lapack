@@ -9,18 +9,18 @@
 *  ===========
 *
 *       SUBROUTINE DGQRCST( M, P, N, A, AF, LDA, B, BF, LDB, U, LDU, V,
-*                           LDV, ALPHA, BETA, R, LDR, IWORK, WORK,
+*                           LDV, X, LDX, ALPHA, BETA, R, LDR, IWORK, WORK,
 *                           LWORK, RWORK, RESULT )
 *
 *       .. Scalar Arguments ..
-*       INTEGER            LDA, LDB, LDR, LDU, LDV, LWORK, M, N, P
+*       INTEGER            LDA, LDB, LDR, LDU, LDV, LDX, LWORK, M, N, P
 *       ..
 *       .. Array Arguments ..
 *       INTEGER            IWORK( * )
 *       DOUBLE PRECISION   A( LDA, * ), AF( LDA, * ), ALPHA( * ),
 *      $                   B( LDB, * ), BETA( * ), BF( LDB, * ),
-*      $                   R( LDR, * ), RESULT( 6 ),
-*      $                   RWORK( * ), U( LDU, * ), V( LDV, * ),
+*      $                   R( LDR, * ), RESULT( 4 ),
+*      $                   RWORK( * ), U( LDU, * ), V( LDV, * ), X( LDX, * ),
 *      $                   WORK( LWORK )
 *       ..
 *
@@ -120,6 +120,18 @@
 *>          The leading dimension of the array V. LDV >= max(1,P).
 *> \endverbatim
 *>
+*> \param[out] X
+*> \verbatim
+*>          X is DOUBLE PRECISION array, dimension(LDX,N)
+*>          The P by X matrix X.
+*> \endverbatim
+*>
+*> \param[in] LDX
+*> \verbatim
+*>          LDX is INTEGER
+*>          The leading dimension of the array X. LDX >= max(1,P).
+*> \endverbatim
+*>
 *> \param[out] ALPHA
 *> \verbatim
 *>          ALPHA is DOUBLE PRECISION array, dimension (N)
@@ -170,7 +182,7 @@
 *>
 *> \param[out] RESULT
 *> \verbatim
-*>          RESULT is DOUBLE PRECISION array, dimension (6)
+*>          RESULT is DOUBLE PRECISION array, dimension (4)
 *>          The test ratios:
 *>          RESULT(1) = norm( A - U1*D1*X ) / ( MAX(M,N)*norm(A)*ULP )
 *>          RESULT(2) = norm( B - U2*D2*X ) / ( MAX(P,N)*norm(B)*ULP )
@@ -190,7 +202,7 @@
 *
 *  =====================================================================
       SUBROUTINE DGQRCST( M, P, N, A, AF, LDA, B, BF, LDB, U, LDU, V,
-     $                    LDV, ALPHA, BETA, R, LDR, IWORK, WORK,
+     $                    LDV, X, LDX, ALPHA, BETA, R, LDR, IWORK, WORK,
      $                    LWORK, RWORK, RESULT )
 *
 *  -- LAPACK test routine --
@@ -198,7 +210,7 @@
 *  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
 *
 *     .. Scalar Arguments ..
-      INTEGER            LDA, LDB, LDR, LDU, LDV, LWORK, M, N, P
+      INTEGER            LDA, LDB, LDR, LDU, LDV, LDX, LWORK, M, N, P
 *     ..
 *     .. Array Arguments ..
       INTEGER            IWORK( * )
@@ -206,7 +218,7 @@
      $                   B( LDB, * ), BETA( * ), BF( LDB, * ),
      $                   R( LDR, * ), RESULT( 4 ),
      $                   RWORK( * ), U( LDU, * ), V( LDV, * ),
-     $                   WORK( LWORK )
+     $                   X( LDX, * ), WORK( LWORK )
 *     ..
 *
 *  =====================================================================
@@ -217,6 +229,7 @@
 *     ..
 *     .. Local Scalars ..
       LOGICAL            SWAPPED
+      CHARACTER          CA, CB, CC
       INTEGER            I, INFO, J, L, K, K1, K2
       DOUBLE PRECISION   ANORM, BNORM, RESID, TEMP, ULP, ULPINV, UNFL,
      $                   TOL
@@ -248,9 +261,12 @@
 *     Factorize the matrices A and B in the arrays AF and BF.
 *
       TOL = -1
-      CALL DGGQRCS( 'Y', 'Y', 'Y', M, N, P, L, SWAPPED, AF, LDA,
-     $              BF, LDB, ALPHA, BETA, U, LDU, V, LDV, TOL,
-     $              WORK, LWORK, IWORK, INFO )
+      CA = 'Y'
+      CB = 'Y'
+      CC = 'Y'
+      CALL DGGQRCS( 'Y', 'Y', 'Y', CA, CB, CC, M, N, P, L, SWAPPED,
+     $              AF, LDA, BF, LDB, ALPHA, BETA, U, LDU, V, LDV,
+     $              X, LDX, TOL, WORK, LWORK, IWORK, INFO )
       IF ( INFO.NE.0 ) THEN
          RESULT(1) = -1
          RESULT(2) = -1
@@ -264,15 +280,13 @@
 *
 *     Compute A:= A - U*D1*X
 *
-*     X is stored in WORK(2:L*N+1)
-*
       IF( .NOT.SWAPPED ) THEN
 *                       k1
 *     1)    A := A - [ U11 ] * [X11 X12 X13] k1
 *                    [ U21 ]
 *                    [ U31 ]
          CALL DGEMM( 'No transpose', 'No transpose', M, N, K1, -ONE,
-     $               U(1,1), LDU, WORK(2), L, ONE, A, LDA )
+     $               U(1,1), LDU, X, LDX, ONE, A, LDA )
 *                       k
 *     2)    A := A - [ U12 ] * diag(ALPHA) * [X21 X22 X23] k
 *                    [ U22 ]
@@ -320,15 +334,13 @@
 *
 *     Compute B:= B - V*D2*X
 *
-*     X is stored in WORK(2:L*N+1)
-*
       IF( SWAPPED ) THEN
 *                       k2
 *     1)    B := B - [ V11 ] * [X11 X12 X13] k2
 *                    [ V21 ]
 *                    [ V31 ]
          CALL DGEMM( 'No transpose', 'No transpose', P, N, K2, -ONE,
-     $               V(1,1), LDV, WORK(2), L, ONE, B, LDB )
+     $               V(1,1), LDV, X, LDX, ONE, B, LDB )
 *                       k
 *     2)    B := B - [ V12 ] * diag(BETA) * [X21 X22 X23] k
 *                    [ V22 ]
