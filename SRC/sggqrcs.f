@@ -485,6 +485,10 @@
 *
 *  =====================================================================
 *
+*     .. Parameters ..
+      REAL               ONE, ZERO, REALONE, REALZERO
+      PARAMETER          ( ONE = 1.0E0, ZERO = 0.0E0,
+     $                     REALONE = 1.0E0, REALZERO = 0.0E0 )
 *     .. Local Scalars ..
       LOGICAL            PREPROCESSA, PREPROCESSB, PREPROCESSCOLS,
      $                   WANTU1, WANTU2, WANTX, LQUERY
@@ -567,7 +571,7 @@
          INFO = -21
       ELSE IF( LDX.LT.1 .OR. ( WANTX .AND. LDX.LT.RANKMAXG ) ) THEN
          INFO = -23
-      ELSE IF( ISNAN(TOL) .OR. TOL.GT.1.0E0 ) THEN
+      ELSE IF( ISNAN(TOL) .OR. TOL.GT.REALONE ) THEN
          INFO = -24
       ELSE IF( LWORK.LT.1 .AND. .NOT.LQUERY ) THEN
          INFO = -26
@@ -800,8 +804,8 @@
 *
 *     DEBUG
 *
-      NAN = 0.0E0
-      NAN = 0.0E0 / NAN
+      NAN = REALZERO
+      NAN = REALZERO / NAN
       IWORK( :M+N+P ) = -1
       WORK( :LWORK ) = NAN
       ALPHA( :N ) = NAN
@@ -818,8 +822,8 @@
 *
 *     Set scaling factor W such that norm(A) \approx norm(B)
 *
-      IF( NORMA.EQ.0.0E0 ) THEN
-         W = 1.0E0
+      IF( NORMA.EQ.REALZERO ) THEN
+         W = REALONE
       ELSE
          W = BASE ** INT( ( LOG(NORMB) - LOG(NORMA) ) / LOG( BASE ) )
       END IF
@@ -834,7 +838,7 @@
       IF( NORMB.LE.UNFL ) THEN
          NORMG = W * NORMA
       ELSE
-         NORMG = NORMB * SQRT( 1.0E0 + ( ( W * NORMA ) / NORMB )**2 )
+         NORMG = NORMB * SQRT( REALONE + ( ( W * NORMA ) / NORMB )**2 )
       ENDIF
 *
       ABSTOLG = TOL * MAX( ROWSA + ROWSB, N ) * MAX( NORMG, UNFL )
@@ -845,7 +849,7 @@
          RETURN
       ENDIF
 *
-      CALL SLASCL( 'G', -1, -1, 1.0E0, W, M, N, A, LDA, INFO )
+      CALL SLASCL( 'G', -1, -1, REALONE, W, M, N, A, LDA, INFO )
       IF ( INFO.NE.0 ) THEN
          RETURN
       ENDIF
@@ -919,13 +923,13 @@
          END DO
          IG21 = IG11 + ROWSA
 *        Copy full rank part into G
-         CALL SLASET( 'L', ROWSA, COLS, 0.0E0, 0.0E0,
+         CALL SLASET( 'L', ROWSA, COLS, ZERO, ZERO,
      $                WORK( IG11 ), LDG )
          CALL SLACPY( 'U', ROWSA, COLS, A, LDA, WORK( IG11 ), LDG )
          CALL SLAPMT( .FALSE., ROWSA, COLS, WORK( IG11 ), LDG, IWORK )
 *        Initialize U1 although xORCSDB2BY1 will partially overwrite this
          IF( WANTU1 ) THEN
-             CALL SLASET( 'A', M, M, 0.0E0, 1.0E0, U1, LDU1 )
+             CALL SLASET( 'A', M, M, ZERO, ONE, U1, LDU1 )
          ENDIF
       ELSE
          CALL SLACPY( 'A', M, COLS, A, LDA, WORK( IG11 ), LDG )
@@ -947,13 +951,13 @@
             ROWSB = ROWSB + 1
          END DO
 *        Copy full rank part into G
-         CALL SLASET( 'L', ROWSB, COLS, 0.0E0, 0.0E0,
+         CALL SLASET( 'L', ROWSB, COLS, ZERO, ZERO,
      $                WORK( IG21 ), LDG )
          CALL SLACPY( 'U', ROWSB, COLS, B, LDB, WORK( IG21 ), LDG )
          CALL SLAPMT( .FALSE., ROWSB, COLS, WORK( IG21 ), LDG, IWORK )
 *        Initialize U2 although xORCSDB2BY1 will partially overwrite this
          IF( WANTU2 ) THEN
-            CALL SLASET( 'A', P, P, 0.0E0, 1.0E0, U2, LDU2 )
+            CALL SLASET( 'A', P, P, ZERO, ONE, U2, LDU2 )
          ENDIF
       ELSE
          CALL SLACPY( 'A', P, COLS, B, LDB, WORK( IG21 ), LDG )
@@ -1000,10 +1004,10 @@
 *
       IF( RANK.EQ.0 ) THEN
          IF( WANTU1 ) THEN
-            CALL SLASET( 'A', M, M, 0.0E0, 1.0E0, U1, LDU1 )
+            CALL SLASET( 'A', M, M, ZERO, ONE, U1, LDU1 )
          END IF
          IF( WANTU2 ) THEN
-            CALL SLASET( 'A', P, P, 0.0E0, 1.0E0, U2, LDU2 )
+            CALL SLASET( 'A', P, P, ZERO, ONE, U2, LDU2 )
          END IF
 *
          WORK( 1 ) = REAL( LWKOPT )
@@ -1106,10 +1110,10 @@
          IF ( RANK.LE.M ) THEN
            IF( COLS.GT.RANK ) THEN
                CALL SGEMM( 'N', 'N', RANK, COLS - RANK, RANK,
-     $                     1.0E0, X, LDX, A( 1, RANK + 1 ), LDA,
-     $                     0.0E0, X( 1, RANK + 1 ), LDX )
+     $                     ONE, X, LDX, A( 1, RANK + 1 ), LDA,
+     $                     ZERO, X( 1, RANK + 1 ), LDX )
             END IF
-            CALL STRMM( 'R', 'U', 'N', 'N', RANK, RANK, 1.0E0,
+            CALL STRMM( 'R', 'U', 'N', 'N', RANK, RANK, ONE,
      $                  A, LDA, X, LDX )
          ELSE
             CALL SLACPY( 'U', M, COLS, A, LDA, WORK( IG11 ), LDG )
@@ -1117,16 +1121,16 @@
      $                   WORK( IG22 ), LDG )
             IF( COLS.GT.RANK ) THEN
                CALL SGEMM( 'N', 'N', RANK, COLS - RANK, RANK,
-     $                     1.0E0, X, LDX,
+     $                     ONE, X, LDX,
      $                     WORK( IG11 + RANK * LDG ), LDG,
-     $                     0.0E0, X( 1, RANK + 1 ), LDX )
+     $                     ZERO, X( 1, RANK + 1 ), LDX )
             ENDIF
-            CALL STRMM( 'R', 'U', 'N', 'N', RANK, RANK, 1.0E0,
+            CALL STRMM( 'R', 'U', 'N', 'N', RANK, RANK, ONE,
      $                  WORK( IG11 ), LDG, X, LDX )
          END IF
 *
          IF( PREPROCESSCOLS ) THEN
-            CALL SLASET( 'G', RANK, N - RANK, 0.0E0, 0.0E0,
+            CALL SLASET( 'G', RANK, N - RANK, ZERO, ZERO,
      $                   X( 1, RANK + 1 ), LDX )
             CALL SORMQR( 'R', 'T', RANK, N, RANK, WORK( IMAT ), LDG,
      $                   WORK( ITAUGL ), X, LDX,
@@ -1208,8 +1212,8 @@
 *     * the code below this paragraph is one large iteration of I from 1
 *       to K with different DO statements for the different cases
       DO I = 1, K1P - K1
-         ALPHA( I ) = 1.0E0
-         BETA( I ) = 0.0E0
+         ALPHA( I ) = REALONE
+         BETA( I ) = REALZERO
 *        DEBUG
          WORK( I ) = NAN
       ENDDO
@@ -1217,10 +1221,10 @@
          THETA = BETA( I )
 *        Do not adjust singular value if THETA is greater
 *        than pi/2 (infinite singular values won't change)
-         IF( COS( THETA ).LE.0.0E0 ) THEN
-            ALPHA( I ) = 0.0E0
-            BETA( I ) = 1.0E0
-            WORK( I ) = 1.0E0
+         IF( COS( THETA ).LE.REALZERO ) THEN
+            ALPHA( I ) = REALZERO
+            BETA( I ) = REALONE
+            WORK( I ) = REALONE
          ELSE
 *           iota comes in the greek alphabet after theta
             IOTA = ATAN( W * TAN( THETA ) )
@@ -1238,8 +1242,8 @@
          END IF
       END DO
       DO I = K1P - K1 + KP + 1, K
-         ALPHA( I ) = 0.0E0
-         BETA( I ) = 1.0E0
+         ALPHA( I ) = REALZERO
+         BETA( I ) = REALONE
 *        DEBUG
          WORK( I ) = NAN
       ENDDO
