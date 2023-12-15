@@ -294,7 +294,7 @@
 *     in norm, then xLARFGP might overflow or compute inaccurate
 *     results. Vectors with a norm smaller than MINNORM are directly set
 *     to zero to work around this problem.
-      MINNORM = EPS**2
+      MINNORM = EPS**4
 *
 *     Reduce columns 1, ..., M-Q of X11 and X21
 *
