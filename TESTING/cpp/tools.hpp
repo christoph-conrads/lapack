@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, 2019, 2020 Christoph Conrads
+ * Copyright (c) 2016, 2019, 2020, 2023 Christoph Conrads
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -334,11 +334,14 @@ void print_matrix(const char* name, const Matrix& a) {
 
 template<class Matrix>
 void print_machine_readable_matrix(const char* identifier, const Matrix& a) {
-	static_assert(sizeof(typename Matrix::value_type) == sizeof(float), "");
+	using Number = typename Matrix::value_type;
+	constexpr const char* fmt = std::is_same<Number, float>::value
+		? "%s(%zu, %zu) = %+15.9e;\n"
+		: "%s(%zu, %zu) = %+23.17e;\n";
 
 	for(auto i = std::size_t{0}; i < a.size1(); ++i) {
 		for(auto j = std::size_t{0}; j < a.size2(); ++j) {
-			std::printf("%s(%zu, %zu) = %+15.9e;\n", identifier, i, j, a(i, j));
+			std::printf(fmt, identifier, i, j, a(i, j));
 		}
 	}
 }
