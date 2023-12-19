@@ -129,7 +129,10 @@ assemble_diagonals_like(
 	for(auto i = std::size_t{0}; i < k; ++i)
 	{
 		alpha(i) = std::sin(theta(i));
-		beta(i) = std::cos(theta(i));
+		beta(i) = (theta(i) == Real{M_PI} / Real{2})
+			// avoid values extremely small in modulus
+			? Real{0}
+			: std::cos(theta(i));
 	}
 
 	return assemble_diagonals_like(dummy, m, p, r, swapped_p, alpha, beta);
