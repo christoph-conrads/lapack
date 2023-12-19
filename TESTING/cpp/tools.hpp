@@ -336,8 +336,8 @@ template<class Matrix>
 void print_machine_readable_matrix(const char* identifier, const Matrix& a) {
 	using Number = typename Matrix::value_type;
 	constexpr const char* fmt = std::is_same<Number, float>::value
-		? "%s(%zu, %zu) = %+15.9e;\n"
-		: "%s(%zu, %zu) = %+23.17e;\n";
+		? "%s(%zu, %zu) = %+16.9e;\n"
+		: "%s(%zu, %zu) = %+24.17e;\n";
 
 	for(auto i = std::size_t{0}; i < a.size1(); ++i) {
 		for(auto j = std::size_t{0}; j < a.size2(); ++j) {
