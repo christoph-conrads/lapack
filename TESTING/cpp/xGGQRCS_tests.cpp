@@ -2464,6 +2464,71 @@ BOOST_AUTO_TEST_CASE(regression_switches_20231125)
 }
 
 
+// The re-assembled matrix B is inaccurate.
+BOOST_AUTO_TEST_CASE(regression_switches_20231220)
+{
+	auto m = 4;
+	auto n = 4;
+	auto p = 4;
+	//auto rank_A = 2;
+	//auto rank_B = 3;
+	//auto rank_G = 4;
+	auto hintprepa = 'Y';
+	auto hintprepb = 'N';
+	auto hintprepcols = 'N';
+	//auto w = std::ldexp(double{1}, 4);
+	//auto seed = UINT32_C(2694098538);
+
+	auto caller = ggqrcs::Caller<double>(m, n, p);
+	auto A = caller.A;
+	auto B = caller.B;
+
+	A(0, 0) = +3.24677999739925172e+00;
+	A(0, 1) = -5.34839058994410621e+00;
+	A(0, 2) = +6.96956664454483787e-01;
+	A(0, 3) = +3.72833765003078499e+00;
+	A(1, 0) = +8.65402357781589693e+00;
+	A(1, 1) = -1.41876261127693688e+01;
+	A(1, 2) = +1.89975607541193026e+00;
+	A(1, 3) = +9.91887327221156134e+00;
+	A(2, 0) = +9.63989483126797531e+00;
+	A(2, 1) = +4.54031585029332518e+00;
+	A(2, 2) = +1.46920352060193444e+01;
+	A(2, 3) = +5.45894428436654700e+00;
+	A(3, 0) = +9.90876275850757260e+00;
+	A(3, 1) = -2.38134837090898372e+01;
+	A(3, 2) = -2.50349031303737135e+00;
+	A(3, 3) = +1.34366513959111682e+01;
+	B(0, 0) = +6.92636262810420135e+02;
+	B(0, 1) = +3.09780344298880095e+02;
+	B(0, 2) = -1.57339034472305883e+01;
+	B(0, 3) = +1.37838208829383348e+02;
+	B(1, 0) = +7.28636149122211805e+01;
+	B(1, 1) = -3.32768297509387594e+02;
+	B(1, 2) = -4.01166424764433430e+02;
+	B(1, 3) = -8.24372326979758441e+02;
+	B(2, 0) = -6.73299282677714473e+02;
+	B(2, 1) = +1.71093538301467504e+02;
+	B(2, 2) = -2.68525921515018638e+02;
+	B(2, 3) = +2.24007811936296804e+02;
+	B(3, 0) = +2.61786689499826366e+02;
+	B(3, 1) = +2.98063126863589503e+02;
+	B(3, 2) = -2.55620230496086151e+02;
+	B(3, 3) = +6.14188513433853487e+01;
+
+	caller.A = A;
+	caller.B = B;
+	caller.hint_preprocess_a = hintprepa;
+	caller.hint_preprocess_b = hintprepb;
+	caller.hint_preprocess_cols = hintprepcols;
+
+	auto ret = caller();
+	check_results(ret, A, B, caller);
+
+	BOOST_CHECK(!caller.swapped_p);
+}
+
+
 // expect failures because xLANGE overflows when it should not
 BOOST_TEST_DECORATOR(* boost::unit_test::expected_failures(3))
 BOOST_AUTO_TEST_CASE_TEMPLATE(
