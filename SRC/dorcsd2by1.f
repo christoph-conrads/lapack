@@ -348,9 +348,10 @@
          LORGLQMIN = 1
          LORGLQOPT = 1
          IF( R .EQ. Q ) THEN
-            CALL DORBDB1S( JOBU1, M, P, Q, X11, LDX11, X21, LDX21,
-     $                    THETA, DUM1, U1, LDU1, DUM1, DUM1, WORK,
-     $                    -1, CHILDINFO )
+            CALL DORBDB1S( JOBU1, JOBU2, JOBV1T, M, P, Q,
+     $                     X11, LDX11, X21, LDX21,
+     $                     THETA, DUM1, U1, LDU1, U2, LDU2, V1T, LDV1T,
+     $                     WORK, -1, CHILDINFO )
             LORBDB = INT( WORK(1) )
             IF( WANTU1 .AND. P .GT. 0 ) THEN
                CALL DORGQR( P, P, Q, U1, LDU1, DUM1, WORK(1), -1,
@@ -495,28 +496,10 @@
 *
 *        Simultaneously bidiagonalize X11 and X21
 *
-         CALL DORBDB1S( JOBU1, M, P, Q, X11, LDX11, X21, LDX21, THETA,
-     $                 WORK(IPHI), U1, LDU1, WORK(ITAUP2),
-     $                 WORK(ITAUQ1), WORK(IORBDB), LORBDB, CHILDINFO )
-*
-*        Accumulate Householder reflectors
-*
-         IF( WANTU2 .AND. M-P .GT. 0 ) THEN
-            CALL DLACPY( 'L', M-P, Q, X21, LDX21, U2, LDU2 )
-            CALL DORGQR( M-P, M-P, Q, U2, LDU2, WORK(ITAUP2),
-     $                   WORK(IORGQR), LORGQR, CHILDINFO )
-         END IF
-         IF( WANTV1T .AND. Q .GT. 0 ) THEN
-            V1T(1,1) = ONE
-            DO J = 2, Q
-               V1T(1,J) = ZERO
-               V1T(J,1) = ZERO
-            END DO
-            CALL DLACPY( 'U', Q-1, Q-1, X21(1,2), LDX21, V1T(2,2),
-     $                   LDV1T )
-            CALL DORGLQ( Q-1, Q-1, Q-1, V1T(2,2), LDV1T, WORK(ITAUQ1),
-     $                   WORK(IORGLQ), LORGLQ, CHILDINFO )
-         END IF
+         CALL DORBDB1S( JOBU1, JOBU2, JOBV1T, M, P, Q,
+     $                  X11, LDX11, X21, LDX21,
+     $                  THETA, WORK(IPHI), U1, LDU1, U2, LDU2,
+     $                  V1T, LDV1T, WORK(IORBDB), LORBDB, CHILDINFO )
 *
 *        Simultaneously diagonalize X11 and X21.
 *

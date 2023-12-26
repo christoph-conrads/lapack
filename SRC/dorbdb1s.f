@@ -197,22 +197,23 @@
 *>      Algorithms, 50(1):33-65, 2009.
 *>
 *  =====================================================================
-      SUBROUTINE DORBDB1S( JOBU1, M, P, Q, X11, LDX11,
+      SUBROUTINE DORBDB1S( JOBU1, JOBU2, JOBV1T, M, P, Q, X11, LDX11,
      $                     X21, LDX21, THETA, PHI,
-     $                     U1, LDU1,
-     $                     TAUP2, TAUQ1, WORK, LWORK, INFO )
+     $                     U1, LDU1, U2, LDU2, V1T, LDV1T,
+     $                     WORK, LWORK, INFO )
 *
 *  -- LAPACK computational routine --
 *  -- LAPACK is a software package provided by Univ. of Tennessee,    --
 *  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
 *
 *     .. Scalar Arguments ..
-      CHARACTER          JOBU1
-      INTEGER            INFO, LWORK, M, P, Q, LDX11, LDX21, LDU1
+      CHARACTER          JOBU1, JOBU2, JOBV1T
+      INTEGER            INFO, LWORK, M, P, Q, LDX11, LDX21, LDU1, LDU2,
+     $                   LDV1T
 *     ..
 *     .. Array Arguments ..
       DOUBLE PRECISION   PHI(*), THETA(*)
-      DOUBLE PRECISION   U1(LDU1,*), TAUP2(*), TAUQ1(*),
+      DOUBLE PRECISION   U1(LDU1,*), U2(LDU2,*), V1T(LDV1T,*),
      $                   WORK(*),
      $                   X11(LDX11,*), X21(LDX21,*)
 *     ..
@@ -225,10 +226,10 @@
      $                     REALONE = 1.0D0, ZERO = 0.0D0 )
 *     ..
 *     .. Local Scalars ..
-      DOUBLE PRECISION   C, S, TAUU1
+      DOUBLE PRECISION   C, S, TAUU1, TAUU2, TAUV1T
       INTEGER            CHILDINFO, I, ILARF, IORBDB5, LLARF, LORBDB5,
      $                   LWORKMIN, LWORKOPT
-      LOGICAL            LQUERY, WANTU1
+      LOGICAL            LQUERY, WANTU1, WANTU2, WANTV1T
 *     ..
 *     .. External Subroutines ..
       EXTERNAL           DLARF, DLARFGP, DORBDB5, DROT, DSCAL, XERBLA
@@ -250,10 +251,10 @@
 *
       IF( .NOT.( LSAME( JOBU1, 'Y' ) .OR. LSAME( JOBU1, 'N' ) ) ) THEN
          INFO = -1
-*      ELSE IF( .NOT.( LSAME(JOBU2, 'Y') .OR. LSAME(JOBU2, 'N') ) ) THEN
-*         INFO = -2
-*      ELSE IF(.NOT.( LSAME(JOBV1T, 'Y') .OR. LSAME(JOBV1T, 'N') )) THEN
-*         INFO = -3
+      ELSE IF( .NOT.( LSAME(JOBU2, 'Y') .OR. LSAME(JOBU2, 'N') ) ) THEN
+         INFO = -2
+      ELSE IF(.NOT.( LSAME(JOBV1T, 'Y') .OR. LSAME(JOBV1T, 'N') )) THEN
+         INFO = -3
       ELSE IF( M .LT. 0 ) THEN
          INFO = -4
       ELSE IF( P .LT. Q .OR. M-P .LT. Q ) THEN
@@ -266,18 +267,18 @@
          INFO = -10
       ELSE IF( LDU1 .LT. MAX( 1, P ) ) THEN
          INFO = -15
-*      ELSE IF( LDU2 .LT. MAX( 1, M-P ) ) THEN
-*         INFO = -17
-*      ELSE IF( LDV1T .LT. MAX( 1, Q ) ) THEN
-*         INFO = -19
+      ELSE IF( LDU2 .LT. MAX( 1, M-P ) ) THEN
+         INFO = -17
+      ELSE IF( LDV1T .LT. MAX( 1, Q ) ) THEN
+         INFO = -19
       END IF
 *
 *     Compute workspace
 *
       IF( INFO .EQ. 0 ) THEN
          WANTU1 = LSAME( JOBU1, 'Y' )
-*         WANTU2 = LSAME( JOBU2, 'Y' )
-*         WANTV1T = LSAME( JOBV1T, 'Y' )
+         WANTU2 = LSAME( JOBU2, 'Y' )
+         WANTV1T = LSAME( JOBV1T, 'Y' )
 *
          ILARF = 2
          LLARF = MAX( P-1, M-P-1, Q-1 )
@@ -300,6 +301,12 @@
       IF( WANTU1 ) THEN
          CALL DLASET( 'General', P, P, ZERO, ONE, U1, LDU1 )
       END IF
+      IF( WANTU2 ) THEN
+         CALL DLASET( 'General', M-P, M-P, ZERO, ONE, U2, LDU2 )
+      END IF
+      IF( WANTV1T ) THEN
+         CALL DLASET( 'General', Q, Q, ZERO, ONE, V1T, LDV1T )
+      END IF
 *
 *     Reduce columns 1, ..., Q of X11 and X21
 *
@@ -312,30 +319,59 @@
             CALL DSCAL( Q-I+1, NEGONE, X11(I,I), LDX11 )
          END IF
          CALL DLARFGP( P-I+1, X11(I,I), X11(I+1,I), 1, TAUU1 )
-         CALL DLARFGP( M-P-I+1, X21(I,I), X21(I+1,I), 1, TAUP2(I) )
+*
+         IF( SIGN( REALONE, X21(I,I) ) .EQ. REALONE ) THEN
+            IF( WANTU2 ) THEN
+               CALL DSCAL( M-P, NEGONE, U2(1,I), 1 )
+            END IF
+            CALL DSCAL( Q-I+1, NEGONE, X21(I,I), LDX21 )
+         END IF
+         CALL DLARFGP( M-P-I+1, X21(I,I), X21(I+1,I), 1, TAUU2 )
+*
          THETA(I) = ATAN2( X21(I,I), X11(I,I) )
          C = COS( THETA(I) )
          S = SIN( THETA(I) )
          X11(I,I) = ONE
          X21(I,I) = ONE
+*
          CALL DLARF( 'L', P-I+1, Q-I, X11(I,I), 1, TAUU1, X11(I,I+1),
      $               LDX11, WORK(ILARF) )
          IF( WANTU1 ) THEN
             CALL DLARF( 'R', P, P-I+1, X11(I,I), 1, TAUU1,
      $                  U1(1,I), LDU1, WORK(ILARF) )
          END IF
-         CALL DLARF( 'L', M-P-I+1, Q-I, X21(I,I), 1, TAUP2(I),
+*
+         CALL DLARF( 'L', M-P-I+1, Q-I, X21(I,I), 1, TAUU2,
      $               X21(I,I+1), LDX21, WORK(ILARF) )
+         IF( WANTU2 ) THEN
+            CALL DLARF( 'R', M-P, M-P-I+1, X21(I,I), 1, TAUU2,
+     $                  U2(1,I), LDU2, WORK(ILARF) )
+         END IF
 *
          IF( I .LT. Q ) THEN
             CALL DROT( Q-I, X11(I,I+1), LDX11, X21(I,I+1), LDX21, C, S )
-            CALL DLARFGP( Q-I, X21(I,I+1), X21(I,I+2), LDX21, TAUQ1(I) )
+*
+            IF( SIGN( REALONE, X21(I,I+1) ) .EQ. REALONE ) THEN
+               IF( WANTV1T ) THEN
+                 CALL DSCAL( Q, NEGONE, V1T(I+1,1), LDV1T )
+               END IF
+               CALL DSCAL( P-I+1, NEGONE, X11(I,I+1), 1 )
+               CALL DSCAL( M-P-I+1, NEGONE, X21(I,I+1), 1 )
+            END IF
+            CALL DLARFGP( Q-I, X21(I,I+1), X21(I,I+2), LDX21, TAUV1T )
+*
             S = X21(I,I+1)
             X21(I,I+1) = ONE
-            CALL DLARF( 'R', P-I, Q-I, X21(I,I+1), LDX21, TAUQ1(I),
+*
+            CALL DLARF( 'R', P-I, Q-I, X21(I,I+1), LDX21, TAUV1T,
      $                  X11(I+1,I+1), LDX11, WORK(ILARF) )
-            CALL DLARF( 'R', M-P-I, Q-I, X21(I,I+1), LDX21, TAUQ1(I),
+            CALL DLARF( 'R', M-P-I, Q-I, X21(I,I+1), LDX21, TAUV1T,
      $                  X21(I+1,I+1), LDX21, WORK(ILARF) )
+            IF( WANTV1T ) THEN
+               CALL DLARF( 'L', Q-I, Q, X21(I,I+1), LDX21, TAUV1T,
+     $                     V1T(I+1,1), LDV1T, WORK(ILARF) )
+            END IF
+*
             C = SQRT( DNRM2( P-I, X11(I+1,I+1), 1 )**2
      $          + DNRM2( M-P-I, X21(I+1,I+1), 1 )**2 )
             PHI(I) = ATAN2( S, C )
