@@ -350,6 +350,7 @@ set(DLASRC
    dgejsv.f dgesvj.f dgsvj0.f dgsvj1.f
    dgeequb.f dsyequb.f dpoequb.f dgbequb.f
    dbbcsd.f dlapmr.f dorbdb.f dorbdb1.f dorbdb2.f dorbdb3.f dorbdb4.f
+   dorbdb1s.f
    dorbdb5.f dorbdb6.f dorcsd.f dorcsd2by1.f
    dgeqrt.f dgeqrt2.f dgeqrt3.f dgemqrt.f
    dtpqrt.f dtpqrt2.f dtpmqrt.f dtprfb.f
@@ -546,7 +547,8 @@ string (CONCAT COMPILE_FLAGS
 )
 
 set_source_files_properties(
-	sbbcsd.f sorbdb1.f sorbdb2.f sorbdb3.f sorbdb4.f
+	sbbcsd.f sorbdb1.f sorbdb2.f sorbdb3.f sorbdb4.f sorcsd2by1.f
+	dbbcsd.f dorbdb1.f dorbdb2.f dorbdb3.f dorbdb4.f dorbdb1s.f dorcsd2by1.f
 	PROPERTIES
 		COMPILE_FLAGS ${COMPILE_FLAGS}
 )
