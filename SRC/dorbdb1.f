@@ -164,6 +164,7 @@
 *>           = 0:  successful exit.
 *>           < 0:  if INFO = -i, the i-th argument had an illegal value.
 *> \endverbatim
+*>
 *
 *  Authors:
 *  ========
@@ -216,8 +217,8 @@
 *  ====================================================================
 *
 *     .. Parameters ..
-      DOUBLE PRECISION   ONE, ZERO, REALZERO
-      PARAMETER          ( ONE = 1.0D0, ZERO = 0.0D0, REALZERO = 0.0D0 )
+      DOUBLE PRECISION   ONE
+      PARAMETER          ( ONE = 1.0D0 )
 *     ..
 *     .. Local Scalars ..
       DOUBLE PRECISION   C, S
@@ -226,11 +227,11 @@
       LOGICAL            LQUERY
 *     ..
 *     .. External Subroutines ..
-      EXTERNAL           DLARF, DLARFGP, DLASET, DORBDB5, DROT, XERBLA
+      EXTERNAL           DLARF, DLARFGP, DORBDB5, DROT, XERBLA
 *     ..
 *     .. External Functions ..
-      DOUBLE PRECISION   DLAMCH, DNRM2
-      EXTERNAL           DLAMCH, DNRM2
+      DOUBLE PRECISION   DNRM2
+      EXTERNAL           DNRM2
 *     ..
 *     .. Intrinsic Function ..
       INTRINSIC          ATAN2, COS, MAX, SIN, SQRT
@@ -275,35 +276,12 @@
          RETURN
       END IF
 *
-      EPS = DLAMCH( 'Precision' )
-*     If the first entry of a vector is positive and the vector is small
-*     in norm, then xLARFGP might overflow or compute inaccurate
-*     results. Vectors with a norm smaller than MINNORM are directly set
-*     to zero to work around this problem.
-      MINNORM = EPS**4
-*
 *     Reduce columns 1, ..., Q of X11 and X21
 *
       DO I = 1, Q
 *
-         NORM = DNRM2( P-I+1, X11(I,I), 1 )
-         IF( X11(I,I).GT.REALZERO .AND. NORM.LT.MINNORM ) THEN
-            CALL DLASET( 'G', P-I+1, 1, ZERO, ZERO,
-     $                   X11(I,I), LDX11 )
-            TAUP1( I ) = ZERO
-         ELSE
-            CALL DLARFGP( P-I+1, X11(I,I), X11(I+1,I), 1, TAUP1(I) )
-         END IF
-*
-         NORM = DNRM2( M-P-I+1, X21(I,I), 1 )
-         IF( X21(I,I).GT.REALZERO .AND. NORM.LT.MINNORM ) THEN
-            CALL DLASET( 'G', M-P-I+1, 1, ZERO, ZERO,
-     $                    X21(I,I), LDX21 )
-            TAUP2( I ) = ZERO
-         ELSE
-            CALL DLARFGP( M-P-I+1, X21(I,I), X21(I+1,I), 1, TAUP2(I) )
-         END IF
-*
+         CALL DLARFGP( P-I+1, X11(I,I), X11(I+1,I), 1, TAUP1(I) )
+         CALL DLARFGP( M-P-I+1, X21(I,I), X21(I+1,I), 1, TAUP2(I) )
          THETA(I) = ATAN2( X21(I,I), X11(I,I) )
          C = COS( THETA(I) )
          S = SIN( THETA(I) )
@@ -316,17 +294,7 @@
 *
          IF( I .LT. Q ) THEN
             CALL DROT( Q-I, X11(I,I+1), LDX11, X21(I,I+1), LDX21, C, S )
-*
-            NORM = DNRM2( Q-I, X21(I,I+1), LDX21 )
-            IF( X21(I,I+1).GT.REALZERO .AND. NORM.LT.MINNORM ) THEN
-               CALL DLASET( 'G', 1, Q-I, ZERO, ZERO,
-     $                      X21(I,I+1), LDX21 )
-               TAUQ1( I ) = ZERO
-            ELSE
-               CALL DLARFGP( Q-I, X21(I,I+1), X21(I,I+2), LDX21,
-     $                       TAUQ1(I) )
-            END IF
-*
+            CALL DLARFGP( Q-I, X21(I,I+1), X21(I,I+2), LDX21, TAUQ1(I) )
             S = X21(I,I+1)
             X21(I,I+1) = ONE
             CALL DLARF( 'R', P-I, Q-I, X21(I,I+1), LDX21, TAUQ1(I),
@@ -334,7 +302,7 @@
             CALL DLARF( 'R', M-P-I, Q-I, X21(I,I+1), LDX21, TAUQ1(I),
      $                  X21(I+1,I+1), LDX21, WORK(ILARF) )
             C = SQRT( DNRM2( P-I, X11(I+1,I+1), 1 )**2
-     $              + DNRM2( M-P-I, X21(I+1,I+1), 1 )**2 )
+     $          + DNRM2( M-P-I, X21(I+1,I+1), 1 )**2 )
             PHI(I) = ATAN2( S, C )
             CALL DORBDB5( P-I, M-P-I, Q-I-1, X11(I+1,I+1), 1,
      $                    X21(I+1,I+1), 1, X11(I+1,I+2), LDX11,
