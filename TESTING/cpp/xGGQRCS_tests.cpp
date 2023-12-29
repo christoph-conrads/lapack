@@ -2529,6 +2529,61 @@ BOOST_AUTO_TEST_CASE(regression_switches_20231220)
 }
 
 
+// Check if lapack#965 was fixed (the DBBCSD termination criterion is too
+// loose).
+BOOST_AUTO_TEST_CASE(regression_switches_20231226)
+{
+	auto m = 3;
+	auto n = 3;
+	auto p = 3;
+	//auto rank_A = 1;
+	//auto rank_B = 2;
+	//auto rank_G = 2;
+	auto hintprepa = 'N';
+	auto hintprepb = 'N';
+	auto hintprepcols = 'N';
+	//auto w = std::ldexp(double{1}, -26);
+	//auto seed = UINT32_C(3127402501);
+
+	auto caller = ggqrcs::Caller<double>(m, n, p);
+	auto A = caller.A;
+	auto B = caller.B;
+
+	A(0, 0) = +6.74929253732324819e-02;
+	A(0, 1) = +1.22859375733411061e-01;
+	A(0, 2) = +5.07325941117727705e-02;
+	A(1, 0) = -8.12706370462513289e-02;
+	A(1, 1) = -1.47939353313599864e-01;
+	A(1, 2) = -6.10889247972628419e-02;
+	A(2, 0) = +4.60489625514949097e-01;
+	A(2, 1) = +8.38242935976169390e-01;
+	A(2, 2) = +3.46137511965030342e-01;
+	// Make the norm of B similar to the norm of A because the underlying
+	// problem is unrelated to matrix scaling.
+	auto w = std::ldexp(double{1}, -20);
+	B(0, 0) = w * -5.10454736289108230e+05;
+	B(0, 1) = w * +4.58049065850535840e+02;
+	B(0, 2) = w * +6.52789076380331302e+05;
+	B(1, 0) = w * -6.85877465731282020e+05;
+	B(1, 1) = w * +6.15462077459372153e+02;
+	B(1, 2) = w * +8.77126384642258170e+05;
+	B(2, 0) = w * -2.12078129698660923e+05;
+	B(2, 1) = w * +1.90305197065533122e+02;
+	B(2, 2) = w * +2.71213638672229019e+05;
+
+	caller.A = A;
+	caller.B = B;
+	caller.hint_preprocess_a = hintprepa;
+	caller.hint_preprocess_b = hintprepb;
+	caller.hint_preprocess_cols = hintprepcols;
+
+	auto ret = caller();
+	check_results(ret, A, B, caller);
+
+	BOOST_CHECK(!caller.swapped_p);
+}
+
+
 // expect failures because xLANGE overflows when it should not
 BOOST_TEST_DECORATOR(* boost::unit_test::expected_failures(3))
 BOOST_AUTO_TEST_CASE_TEMPLATE(
