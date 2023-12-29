@@ -36,6 +36,8 @@
 #include <boost/numeric/ublas/matrix.hpp>
 #include <limits>
 #include <cmath>
+#include <cstdio>
+#include <cstdlib>
 #include <random>
 #include <type_traits>
 
@@ -329,6 +331,32 @@ void print_matrix(const char* name, const Matrix& a) {
 				std::printf("%+8.2e\n", a(i, j));
 			}
 		}
+	}
+}
+
+template<class Matrix>
+void print_matrix_to_file(const char* filename, const Matrix& a) {
+	using Number = typename Matrix::value_type;
+	constexpr const char* fmt = std::is_same<Number, float>::value
+		? "%+16.9e%s"
+		: "%+24.17e%s";
+
+	auto f = std::fopen(filename, "w");
+	if(!f) {
+		std::perror("fopen");
+		std::exit(EXIT_FAILURE);
+	}
+
+	for(auto i = std::size_t{0}; i < a.size1(); ++i) {
+		for(auto j = std::size_t{0}; j < a.size2(); ++j) {
+			const char* sep = (j + 1 < a.size2()) ? " " : "\n";
+			std::fprintf(f, fmt, a(i, j), sep);
+		}
+	}
+
+	if(fclose(f) < 0) {
+		std::perror("fclose");
+		std::exit(EXIT_FAILURE);
 	}
 }
 
