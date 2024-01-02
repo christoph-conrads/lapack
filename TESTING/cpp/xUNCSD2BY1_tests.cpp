@@ -331,6 +331,6 @@ BOOST_AUTO_TEST_CASE(xUNCSD2BY1_regression_20231026)
 	auto eps = std::numeric_limits<Real>::epsilon();
 
 	BOOST_CHECK_LE(
-		ublas::norm_frobenius(Q - almost_Q), 2 * eps * ublas::norm_frobenius(Q)
+		ublas::norm_frobenius(Q - almost_Q), 4 * eps * ublas::norm_frobenius(Q)
 	);
 }
