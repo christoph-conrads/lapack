@@ -354,10 +354,10 @@
 *>          < 0:  if INFO = -i, the i-th argument had an illegal value.
 *>          > 0:  One of the subroutines failed. Its name will be
 *>                printed by XERBLA.
-*>          101:  The norm of A is not a real finite number.
-*>          102:  The norm of B is not a real finite number.
-*>          103:  The norm of G is not a real finite number.
-*>          104:  The scaling factor W is not a real finite number.
+*>          -101: The norm of A is not a real finite number.
+*>          -102: The norm of B is not a real finite number.
+*>          -103: The norm of G is not a real finite number.
+*>          -104: The scaling factor W is not a real finite number.
 *> \endverbatim
 *
 *> \par Internal Parameters:
@@ -601,13 +601,13 @@
       W = -1
 *
       IF( ISNAN(NORMA) .OR. NORMA.GT.HUGE(NORMA) ) THEN
-         INFO = 101
+         INFO = -101
          CALL XERBLA( 'DGGQRCS', INFO )
          RETURN
       ENDIF
 *
       IF( ISNAN(NORMB) .OR. NORMB.GT.HUGE(NORMB) ) THEN
-         INFO = 102
+         INFO = -102
          CALL XERBLA( 'DGGQRCS', INFO )
          RETURN
       ENDIF
@@ -828,7 +828,7 @@
          W = BASE ** INT( ( LOG(NORMB) - LOG(NORMA) ) / LOG( BASE ) )
       END IF
       IF( ISNAN(W) .OR. W.GT.HUGE(W) ) THEN
-         INFO = 104
+         INFO = -104
          CALL XERBLA( 'DGGQRCS', INFO )
          RETURN
       ENDIF
@@ -844,7 +844,7 @@
       ABSTOLG = TOL * MAX( ROWSA + ROWSB, N ) * MAX( NORMG, UNFL )
 *
       IF( ISNAN(NORMG) .OR. NORMG.GT.HUGE(NORMG) ) THEN
-         INFO = 103
+         INFO = -103
          CALL XERBLA( 'DGGQRCS', INFO )
          RETURN
       ENDIF
@@ -1069,11 +1069,11 @@
         PRINT*, "k != k' + k1' - k1 + k2' - k2 !"
         PRINT*, "K, K1, K2   ", K, K1, K2
         PRINT*, "K', K1', K2'", KP, K1P, K2P
-        INFO = 100
+        INFO = -100
         RETURN
       ENDIF
       IF( RANK.NE.KP + K1P + K2P) THEN
-        INFO = 99
+        INFO = -99
         CALL XERBLA( 'DGGQRCS', INFO )
         RETURN
       ENDIF
