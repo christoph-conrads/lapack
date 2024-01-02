@@ -2651,35 +2651,35 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
 	a(0, 0) = M;
 	a(0, 1) = M;
 	b(0, 0) = 1;
-	BOOST_CHECK_EQUAL( call(), 101 );
+	BOOST_CHECK_EQUAL( call(), -101 );
 
 	a = zero_a;
 	b = zero_b;
 	a(0, 0) = 1;
 	b(0, 0) = M;
 	b(0, 1) = M;
-	BOOST_CHECK_EQUAL( call(), 102 );
+	BOOST_CHECK_EQUAL( call(), -102 );
 
 	a = zero_a;
 	b = zero_b;
 	a(0, 0) = M;
 	b(0, 0) = M;
 	// check fails if xLANGE overflows
-	BOOST_CHECK_EQUAL( call(), 103 );
+	BOOST_CHECK_EQUAL( call(), -103 );
 
 	a = zero_a;
 	b = zero_b;
 	a(0, 0) = std::numeric_limits<Real>::min();
 	b(0, 0) = M;
 	// check fails if xLANGE overflows
-	BOOST_CHECK_EQUAL( call(), 104 );
+	BOOST_CHECK_EQUAL( call(), -104 );
 
 	a = zero_a;
 	b = zero_b;
 	a(0, 0) = M;
 	b(0, 0) = std::numeric_limits<Real>::min();
 	// check fails if xLANGE overflows
-	BOOST_CHECK_EQUAL( call(), 104 );
+	BOOST_CHECK_EQUAL( call(), -104 );
 }
 
 
