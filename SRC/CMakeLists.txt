@@ -183,7 +183,7 @@ set(CLASRC
    cgesc2.f cgesdd.f cgesv.f  cgesvd.f cgesvdx.f
    cgesvj.f cgejsv.f cgsvj0.f cgsvj1.f
    cgesvx.f cgetc2.f cgetf2.f cgetrf2.f
-   cgetri.f
+   cgetri.f cgetrp.f
    cggbak.f cggbal.f
    cgges.f  cgges3.f cggesx.f cggev.f  cggev3.f cggevx.f
    cggglm.f cgghrd.f cgghd3.f cgglse.f cggqrf.f cggrqf.f cggqrcs.f
@@ -383,7 +383,7 @@ set(ZLASRC
    zgesc2.f zgesdd.f zgesv.f  zgesvd.f zgesvdx.f zgesvx.f
    zgesvj.f zgejsv.f zgsvj0.f zgsvj1.f
    zgetc2.f zgetf2.f zgetrf.f zgetrf2.f
-   zgetri.f zgetrs.f
+   zgetri.f zgetrp.f zgetrs.f
    zggbak.f zggbal.f
    zgges.f  zgges3.f zggesx.f zggev.f  zggev3.f zggevx.f
    zggglm.f zgghrd.f zgghd3.f zgglse.f zggqrf.f zggrqf.f zggqrcs.f
