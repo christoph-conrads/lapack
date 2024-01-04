@@ -9,7 +9,7 @@
 *  ===========
 *
 *       SUBROUTINE CCKGSV( NM, MVAL, PVAL, NVAL, NMATS, ISEED, THRESH,
-*                          NMAX, A, AF, B, BF, U, V, Q, ALPHA, BETA, R,
+*                          NMAX, A, AF, B, BF, U, V, Q, X, ALPHA, BETA, R,
 *                          IWORK, WORK, RWORK, NIN, NOUT, INFO )
 *
 *       .. Scalar Arguments ..
@@ -21,7 +21,7 @@
 *      $                   PVAL( * )
 *       REAL               ALPHA( * ), BETA( * ), RWORK( * )
 *       COMPLEX            A( * ), AF( * ), B( * ), BF( * ), Q( * ),
-*      $                   R( * ), U( * ), V( * ), WORK( * )
+*      $                   R( * ), U( * ), V( * ), X( * ), WORK( * )
 *       ..
 *
 *
@@ -131,6 +131,11 @@
 *>          Q is COMPLEX array, dimension (NMAX*NMAX)
 *> \endverbatim
 *>
+*> \param[out] X
+*> \verbatim
+*>          X is COMPLEX array, dimension (NMAX*NMAX)
+*> \endverbatim
+*>
 *> \param[out] ALPHA
 *> \verbatim
 *>          ALPHA is REAL array, dimension (NMAX)
@@ -193,7 +198,7 @@
 *
 *  =====================================================================
       SUBROUTINE CCKGSV( NM, MVAL, PVAL, NVAL, NMATS, ISEED, THRESH,
-     $                   NMAX, A, AF, B, BF, U, V, Q, ALPHA, BETA, R,
+     $                   NMAX, A, AF, B, BF, U, V, Q, X, ALPHA, BETA, R,
      $                   IWORK, WORK, RWORK, NIN, NOUT, INFO )
 *
 *  -- LAPACK test routine --
@@ -209,7 +214,7 @@
      $                   PVAL( * )
       REAL               ALPHA( * ), BETA( * ), RWORK( * )
       COMPLEX            A( * ), AF( * ), B( * ), BF( * ), Q( * ),
-     $                   R( * ), U( * ), V( * ), WORK( * )
+     $                   R( * ), U( * ), V( * ), X( * ), WORK( * )
 *     ..
 *
 *  =====================================================================
@@ -221,11 +226,11 @@
       PARAMETER          ( NTYPES = 8 )
 *     ..
 *     .. Local Scalars ..
-      LOGICAL            FIRSTT
-      CHARACTER          DISTA, DISTB, TYPE
+      LOGICAL            FIRSTT, SWAPPED
+      CHARACTER          DISTA, DISTB, TYPE, CA, CB, CC
       CHARACTER*3        PATH
       INTEGER            I, IINFO, IM, IMAT, KLA, KLB, KUA, KUB, LDA,
-     $                   LDB, LDQ, LDR, LDU, LDV, LWORK, M, MODEA,
+     $                   LDB, LDQ, LDR, LDU, LDV, LDX, LWORK, M, MODEA,
      $                   MODEB, N, NFAIL, NRUN, NT, P, K, L, LRWORK
       REAL               ANORM, BNORM, CNDNMA, CNDNMB, TOL
 *     ..
@@ -254,11 +259,18 @@
       LDB = NMAX
       LDU = NMAX
       LDV = NMAX
+      LDX = NMAX
       LDQ = NMAX
       LDR = NMAX
-      CALL CGGQRCS( 'Y', 'Y', 'Y', NMAX, NMAX, NMAX, IWORK(1), IWORK(2),
-     $              AF, LDA, BF, LDB, ALPHA, BETA, U, LDU, V, LDV, TOL,
-     $              WORK, -1, RWORK, -1, IWORK, INFO )
+*
+      TOL = -1
+      CA = 'Y'
+      CB = 'Y'
+      CC = 'Y'
+      CALL CGGQRCS( 'Y', 'Y', 'Y', CA, CB, CC, NMAX, NMAX, NMAX,
+     $              IWORK(1), SWAPPED, AF, LDA, BF, LDB, ALPHA, BETA,
+     $              U, LDU, V, LDV, X, LDX, TOL, WORK, -1, RWORK, -1,
+     $              IWORK, INFO )
       LWORK = MAX( NMAX*NMAX, INT(WORK(1)) )
       LRWORK = INT(RWORK(1))
 *
@@ -389,7 +401,7 @@
             NT = 4
 *
             CALL CGQRCST( M, P, N, A, AF, LDA, B, BF, LDB, U, LDU, V,
-     $                    LDV, ALPHA, BETA, R, LDR, IWORK, WORK,
+     $                    LDV, X, LDX, ALPHA, BETA, R, LDR, IWORK, WORK,
      $                    LWORK, RWORK, LRWORK, RESULT )
 *
 *           Print information about the tests that did not

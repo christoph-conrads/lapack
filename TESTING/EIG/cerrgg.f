@@ -74,6 +74,7 @@
 *     ..
 *     .. Local Scalars ..
       LOGICAL            SWAPPED
+      CHARACTER          CA, CB, CC
       CHARACTER*2        C2
       INTEGER            DUMMYK, DUMMYL, I, IFST, IHI, ILO, ILST, INFO,
      $                   J, M, NCYCLE, NT, SDIM, LWORK
@@ -484,7 +485,7 @@
          CALL CTGSJA( 'N', 'N', 'Q', 0, 0, 0, DUMMYK, DUMMYL, A, 1, B,
      $                1, TOLA, TOLB, R1, R2, U, 1, V, 1, Q, 0, W,
      $                NCYCLE, INFO )
-         CALL CHKXER( 'CTGSJA', INFOT, NOUT, LERR, OK )
+         CALL CHKXER( 'FAIL', INFOT, NOUT, LERR, OK )
          NT = NT + 11
 *
 *     Test error exits for the GLM path.
@@ -641,72 +642,123 @@
 *        CGGQRCS
 *
          SRNAMT = 'CGGQRCS'
+         CA = 'Y'
+         CB = 'Y'
+         CC = 'Y'
+         SCALE = 0.0E0
          INFOT = 1
-         CALL CGGQRCS( '/', 'N', 'N', 0, 0, 0, I, SWAPPED,
-     $                 A, 1, B, 1, R1, R2, U, 1, V, 1, SCALE,
+         CALL CGGQRCS( '/', 'N', 'N', CA, CB, CC,
+     $                 0, 0, 0, I, SWAPPED,
+     $                 A, 1, B, 1, R1, R2,
+     $                 U, 1, V, 1, Z, 1, SCALE,
      $                 W, LW, RW, LW, IW, INFO )
          CALL CHKXER( 'CGGQRCS', INFOT, NOUT, LERR, OK )
          INFOT = 2
-         CALL CGGQRCS( 'N', '/', 'N', 0, 0, 0, I, SWAPPED,
-     $                 A, 1, B, 1, R1, R2, U, 1, V, 1, SCALE,
+         CALL CGGQRCS( 'N', '/', 'N', CA, CB, CC,
+     $                 0, 0, 0, I, SWAPPED,
+     $                 A, 1, B, 1, R1, R2,
+     $                 U, 1, V, 1, Z, 1, SCALE,
      $                 W, LW, RW, LW, IW, INFO )
          CALL CHKXER( 'CGGQRCS', INFOT, NOUT, LERR, OK )
          INFOT = 3
-         CALL CGGQRCS( 'N', 'N', '/', 0, 0, 0, I, SWAPPED,
-     $                 A, 1, B, 1, R1, R2, U, 1, V, 1, SCALE,
+         CALL CGGQRCS( 'N', 'N', '/', CA, CB, CC,
+     $                 0, 0, 0, I, SWAPPED,
+     $                 A, 1, B, 1, R1, R2,
+     $                 U, 1, V, 1, Z, 1, SCALE,
      $                 W, LW, RW, LW, IW, INFO )
          CALL CHKXER( 'CGGQRCS', INFOT, NOUT, LERR, OK )
          INFOT = 4
-         CALL CGGQRCS( 'N', 'N', 'N', -1, 0, 0, I, SWAPPED,
-     $                 A, 1, B, 1, R1, R2, U, 1, V, 1, SCALE,
+         CALL CGGQRCS( 'N', 'N', 'N', '/', CB, CC,
+     $                 0, 0, 0, I, SWAPPED,
+     $                 A, 1, B, 1, R1, R2,
+     $                 U, 1, V, 1, Z, 1, SCALE,
      $                 W, LW, RW, LW, IW, INFO )
          CALL CHKXER( 'CGGQRCS', INFOT, NOUT, LERR, OK )
          INFOT = 5
-         CALL CGGQRCS( 'N', 'N', 'N', 0, -1, 0, I, SWAPPED,
-     $                 A, 1, B, 1, R1, R2, U, 1, V, 1, SCALE,
+         CALL CGGQRCS( 'N', 'N', 'N', CA, '/', CC,
+     $                 0, 0, 0, I, SWAPPED,
+     $                 A, 1, B, 1, R1, R2,
+     $                 U, 1, V, 1, Z, 1, SCALE,
      $                 W, LW, RW, LW, IW, INFO )
          CALL CHKXER( 'CGGQRCS', INFOT, NOUT, LERR, OK )
          INFOT = 6
-         CALL CGGQRCS( 'N', 'N', 'N', 0, 0, -1, I, SWAPPED,
-     $                 A, 1, B, 1, R1, R2, U, 1, V, 1, SCALE,
+         CALL CGGQRCS( 'N', 'N', 'N', CA, CB, '/',
+     $                 0, 0, 0, I, SWAPPED,
+     $                 A, 1, B, 1, R1, R2,
+     $                 U, 1, V, 1, Z, 1, SCALE,
      $                 W, LW, RW, LW, IW, INFO )
          CALL CHKXER( 'CGGQRCS', INFOT, NOUT, LERR, OK )
-         INFOT = 10
-         CALL CGGQRCS( 'N', 'N', 'N', 0, 0, 0, I, SWAPPED,
-     $                 A, 0, B, 1, R1, R2, U, 1, V, 1, SCALE,
+         INFOT = 7
+         CALL CGGQRCS( 'N', 'N', 'N', CA, CB, CC,
+     $                 -1, 0, 0, I, SWAPPED,
+     $                 A, 1, B, 1, R1, R2,
+     $                 U, 1, V, 1, Z, 1, SCALE,
      $                 W, LW, RW, LW, IW, INFO )
          CALL CHKXER( 'CGGQRCS', INFOT, NOUT, LERR, OK )
-         INFOT = 12
-         CALL CGGQRCS( 'N', 'N', 'N', 0, 0, 0, I, SWAPPED,
-     $                 A, 1, B, 0, R1, R2, U, 1, V, 1, SCALE,
+         INFOT = 8
+         CALL CGGQRCS( 'N', 'N', 'N', CA, CB, CC,
+     $                 0, -1, 0, I, SWAPPED,
+     $                 A, 1, B, 1, R1, R2,
+     $                 U, 1, V, 1, Z, 1, SCALE,
      $                 W, LW, RW, LW, IW, INFO )
          CALL CHKXER( 'CGGQRCS', INFOT, NOUT, LERR, OK )
-         INFOT = 16
-         CALL CGGQRCS( 'N', 'N', 'N', 0, 0, 0, I, SWAPPED,
-     $                 A, 1, B, 1, R1, R2, U, 0, V, 1, SCALE,
+         INFOT = 9
+         CALL CGGQRCS( 'N', 'N', 'N', CA, CB, CC,
+     $                 0, 0, -1, I, SWAPPED,
+     $                 A, 1, B, 1, R1, R2,
+     $                 U, 1, V, 1, Z, 1, SCALE,
      $                 W, LW, RW, LW, IW, INFO )
          CALL CHKXER( 'CGGQRCS', INFOT, NOUT, LERR, OK )
-         INFOT = 18
-         CALL CGGQRCS( 'N', 'N', 'N', 0, 0, 0, I, SWAPPED,
-     $                 A, 1, B, 1, R1, R2, U, 1, V, 0, SCALE,
+         INFOT = 13
+         CALL CGGQRCS( 'N', 'N', 'N', CA, CB, CC,
+     $                 0, 0, 0, I, SWAPPED,
+     $                 A, 0, B, 1, R1, R2,
+     $                 U, 1, V, 1, Z, 1, SCALE,
+     $                 W, LW, RW, LW, IW, INFO )
+         CALL CHKXER( 'CGGQRCS', INFOT, NOUT, LERR, OK )
+         INFOT = 15
+         CALL CGGQRCS( 'N', 'N', 'N', CA, CB, CC,
+     $                 0, 0, 0, I, SWAPPED,
+     $                 A, 1, B, 0, R1, R2,
+     $                 U, 1, V, 1, Z, 1, SCALE,
      $                 W, LW, RW, LW, IW, INFO )
          CALL CHKXER( 'CGGQRCS', INFOT, NOUT, LERR, OK )
          INFOT = 19
-         CALL CGGQRCS( 'N', 'N', 'N', 0, 0, 0, I, SWAPPED,
-     $                 A, 1, B, 1, R1, R2, U, 1, V, 1, 9.9E9,
+         CALL CGGQRCS( 'N', 'N', 'N', CA, CB, CC,
+     $                 0, 0, 0, I, SWAPPED,
+     $                 A, 1, B, 1, R1, R2,
+     $                 U, 0, V, 1, Z, 1, SCALE,
      $                 W, LW, RW, LW, IW, INFO )
          CALL CHKXER( 'CGGQRCS', INFOT, NOUT, LERR, OK )
          INFOT = 21
-         CALL CGGQRCS( 'N', 'N', 'N', 0, 0, 0, I, SWAPPED,
-     $                 A, 1, B, 1, R1, R2, U, 1, V, 1, SCALE,
-     $                 W, 0, RW, LW, IW, INFO )
+         CALL CGGQRCS( 'N', 'N', 'N', CA, CB, CC,
+     $                 0, 0, 0, I, SWAPPED,
+     $                 A, 1, B, 1, R1, R2,
+     $                 U, 1, V, 0, Z, 1, SCALE,
+     $                 W, LW, RW, LW, IW, INFO )
          CALL CHKXER( 'CGGQRCS', INFOT, NOUT, LERR, OK )
          INFOT = 23
-         CALL CGGQRCS( 'N', 'N', 'N', 0, 0, 0, I, SWAPPED,
-     $                 A, 1, B, 1, R1, R2, U, 1, V, 1, SCALE,
+         CALL CGGQRCS( 'N', 'N', 'N', CA, CB, CC,
+     $                 0, 0, 0, I, SWAPPED,
+     $                 A, 1, B, 1, R1, R2,
+     $                 U, 1, V, 1, Z, 0, SCALE,
+     $                 W, LW, RW, LW, IW, INFO )
+         CALL CHKXER( 'CGGQRCS', INFOT, NOUT, LERR, OK )
+         INFOT = 26
+                  CALL CGGQRCS( 'N', 'N', 'N', CA, CB, CC,
+     $                 0, 0, 0, I, SWAPPED,
+     $                 A, 1, B, 1, R1, R2,
+     $                 U, 1, V, 1, Z, 1, SCALE,
+     $                 W, 0, RW, LW, IW, INFO )
+         CALL CHKXER( 'CGGQRCS', INFOT, NOUT, LERR, OK )
+         INFOT = 28
+                  CALL CGGQRCS( 'N', 'N', 'N', CA, CB, CC,
+     $                 0, 0, 0, I, SWAPPED,
+     $                 A, 1, B, 1, R1, R2,
+     $                 U, 1, V, 1, Z, 1, SCALE,
      $                 W, LW, RW, 0, IW, INFO )
          CALL CHKXER( 'CGGQRCS', INFOT, NOUT, LERR, OK )
-         NT = NT + 13
+         NT = NT + 16
 *
 *        CGGQRF
 *
