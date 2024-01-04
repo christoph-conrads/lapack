@@ -102,7 +102,7 @@
 *>   C  = diag( BETA(1), ..., BETA(K) ), and
 *>   C^2 + S^2 = I.
 *>
-*> The routine computes C, S and optionally the matrices U1, U2, and X.
+*> The routine computes C, S, and optionally the matrices U1, U2, and X.
 *>
 *> If B is an N-by-N nonsingular matrix, then the GSVD of the matrix
 *> pair (A, B) implicitly gives the SVD of A*inv(B):
@@ -511,9 +511,9 @@
       EXTERNAL           LSAME, DLAMCH, DLANGE
 *     ..
 *     .. External Subroutines ..
-      EXTERNAL           DGEMM, DGEQP3, DGETRP, DLACPY, DLAPMT, DLASCL,
-     $                   DLASET, DORGQR, DORCSD2BY1, DORMLQ, DORMQR,
-     $                   XERBLA
+      EXTERNAL           DGEMM, DGEQP3, DGEQRF, DGETRP, DLACPY, DLAPMT,
+     $                   DLASCL, DLASET, DORGQR, DORCSD2BY1, DORMLQ,
+     $                   DORMQR, XERBLA
 *     ..
 *     .. Intrinsic Functions ..
       INTRINSIC          ACOS, COS, ISNAN, MAX, MIN, SIN, SQRT
@@ -584,7 +584,7 @@
 *
 *     Initialize variables
 *
-      BASE = DLAMCH( 'B' )
+      BASE = DLAMCH( 'Base' )
       ULP = DLAMCH( 'Precision' )
       UNFL = DLAMCH( 'Safe Minimum' )
       IF( TOL.LT.0.0E0 .AND. .NOT.LQUERY ) THEN
