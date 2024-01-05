@@ -193,7 +193,7 @@
 *
 *  =====================================================================
       SUBROUTINE ZCKGSV( NM, MVAL, PVAL, NVAL, NMATS, ISEED, THRESH,
-     $                   NMAX, A, AF, B, BF, U, V, Q, ALPHA, BETA, R,
+     $                   NMAX, A, AF, B, BF, U, V, Q, X, ALPHA, BETA, R,
      $                   IWORK, WORK, RWORK, NIN, NOUT, INFO )
 *
 *  -- LAPACK test routine --
@@ -221,8 +221,8 @@
       PARAMETER          ( NTYPES = 8 )
 *     ..
 *     .. Local Scalars ..
-      LOGICAL            FIRSTT
-      CHARACTER          DISTA, DISTB, TYPE
+      LOGICAL            FIRSTT, SWAPPED
+      CHARACTER          DISTA, DISTB, TYPE, CA, CB, CC
       CHARACTER*3        PATH
       INTEGER            I, IINFO, IM, IMAT, KLA, KLB, KUA, KUB, LDA,
      $                   LDB, LDQ, LDR, LDU, LDV, LWORK, M, MODEA,
@@ -254,11 +254,18 @@
       LDB = NMAX
       LDU = NMAX
       LDV = NMAX
+      LDX = NMAX
       LDQ = NMAX
       LDR = NMAX
-      CALL ZGGQRCS( 'Y', 'Y', 'Y', NMAX, NMAX, NMAX, IWORK(1), IWORK(2),
-     $              AF, LDA, BF, LDB, ALPHA, BETA, U, LDU, V, LDV, TOL,
-     $              WORK, -1, RWORK, -1, IWORK, INFO )
+*
+      TOL = -1
+      CA = 'Y'
+      CB = 'Y'
+      CC = 'Y'
+      CALL ZGGQRCS( 'Y', 'Y', 'Y', CA, CB, CC, NMAX, NMAX, NMAX,
+     $              IWORK(1), SWAPPED, AF, LDA, BF, LDB, ALPHA, BETA,
+     $              U, LDU, V, LDV, X, LDX, TOL, WORK, -1, RWORK, -1,
+     $              IWORK, INFO )
       LWORK = MAX( NMAX*NMAX, INT(WORK(1)) )
       LRWORK = INT( RWORK(1) )
 *
@@ -352,8 +359,11 @@
             NT = 4
 *
             CALL ZGQRCST( M, P, N, A, AF, LDA, B, BF, LDB, U, LDU, V,
-     $                    LDV, ALPHA, BETA, R, LDR, IWORK, WORK,
+     $                    LDV, X, LDX, ALPHA, BETA, R, LDR, IWORK, WORK,
      $                    LWORK, RWORK, LRWORK, RESULT )
+*
+*           Print information about the tests that did not
+*           pass the threshold.
 *
             DO 10 I = 1, NT
                IF( RESULT( I ).GE.THRESH ) THEN
