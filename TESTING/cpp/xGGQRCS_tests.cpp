@@ -458,8 +458,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
 	xGGQRCS_test_workspace_size_check_complex, Number, lapack::supported_complex_types
 )
 {
+	using Matrix = ublas::matrix<Number, ublas::column_major>;
 	using Real = typename tools::real_from<Number>::type;
 
+	constexpr auto nan = tools::not_a_number<Number>::value;
+	constexpr auto nan_real = tools::not_a_number<Real>::value;
 	auto m = 17;
 	auto n = 13;
 	auto p = 8;
@@ -468,38 +471,40 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
 	auto hpc = '?';
 	auto rank = -1;
 	auto swapped_p = false;
-	auto a = Number{1};
-	auto b = Number{2};
-	auto alpha = Real{-1};
-	auto beta = Real{-1};
+	auto a = Matrix(m, n, 1);
+	auto b = Matrix(p, n, 1);
+	auto alpha = std::vector<Real>(n, nan_real);
+	auto beta = std::vector<Real>(n, nan_real);
+	auto u1 = Matrix(m, m, nan);
+	auto u2 = Matrix(p, p, nan);
+	auto x = Matrix(n, n, nan);
 	auto tol = Real{-1};
-	auto u1 = Number{0};
-	auto u2 = Number{0};
-	auto x = Number{0};
-	auto work = Number{0};
-	auto rwork = Real{0};
-	auto iwork = -1;
+	auto work = std::vector<Number>(10u * (m + p) * n, nan);
+	auto rwork = std::vector<Real>((m + p) * n, nan_real);
+	auto iwork = std::vector<lapack_int>(2 * n, -1);
 	auto info = lapack::xGGQRCS(
-		'Y', 'Y', 'Y', &hpa, &hpb, &hpc, m, n, p, &rank, &swapped_p,
-		&a, m, &b, p,
-		&alpha, &beta,
-		&u1, m, &u2, p, &x, m + p,
+		'Y', 'Y', 'Y', &hpa, &hpb, &hpc,
+		m, n, p, &rank, &swapped_p,
+		&a(0, 0), m, &b(0, 0), p,
+		&alpha[0], &beta[0],
+		&u1(0, 0), m, &u2(0, 0), p, &x(0, 0), m+p,
 		&tol,
-		&work, 1, &rwork, 1024, &iwork
+		&work[0], 1, &rwork[0], rwork.size(), &iwork[0]
 	);
 
-	BOOST_CHECK_EQUAL(info, -20);
+	BOOST_CHECK_EQUAL(info, -25);
 
 	info = lapack::xGGQRCS(
-		'Y', 'Y', 'Y', &hpa, &hpb, &hpc, m, n, p, &rank, &swapped_p,
-		&a, m, &b, p,
-		&alpha, &beta,
-		&u1, m, &u2, p, &x, m + p,
+		'Y', 'Y', 'Y', &hpa, &hpb, &hpc,
+		m, n, p, &rank, &swapped_p,
+		&a(0, 0), m, &b(0, 0), p,
+		&alpha[0], &beta[0],
+		&u1(0, 0), m, &u2(0, 0), p, &x(0, 0), m+p,
 		&tol,
-		&work, 1024, &rwork, 1, &iwork
+		&work[0], work.size(), &rwork[0], 1, &iwork[0]
 	);
 
-	BOOST_CHECK_EQUAL(info, -22);
+	BOOST_CHECK_EQUAL(info, -27);
 }
 
 

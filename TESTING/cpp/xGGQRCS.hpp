@@ -578,10 +578,13 @@ struct Caller<std::complex<Real>>
 		B(ldb, n, 0),
 		U1(ldu1, m, tools::not_a_number<Number>::value),
 		U2(ldu2, p, tools::not_a_number<Number>::value),
+		X(ldx, n, tools::not_a_number<Number>::value),
 		alpha(n, tools::not_a_number<Real>::value),
 		beta(n, tools::not_a_number<Real>::value),
 		iwork(m + n + p, -1)
 	{
+		auto rank_max_g = std::min(std::min(m, n) + std::min(p, n), n);
+
 		BOOST_VERIFY( m > 0 );
 		BOOST_VERIFY( n > 0 );
 		BOOST_VERIFY( p > 0 );
@@ -589,6 +592,7 @@ struct Caller<std::complex<Real>>
 		BOOST_VERIFY( ldb >= p );
 		BOOST_VERIFY( ldu1 >= m );
 		BOOST_VERIFY( ldu2 >= p );
+		BOOST_VERIFY( ldx >= rank_max_g );
 		BOOST_VERIFY( !std::isnan(tol) );
 		BOOST_VERIFY( tol <= 1 );
 
@@ -615,6 +619,9 @@ struct Caller<std::complex<Real>>
 
 		auto lwork_opt = static_cast<std::size_t>(std::real(lwork_opt_f));
 		auto lrwork_opt = static_cast<std::size_t>(std::real(lrwork_opt_f));
+
+		BOOST_REQUIRE_GT( lwork_opt, 0 );
+		BOOST_REQUIRE_GT( lrwork_opt, 0 );
 
 		work.resize( lwork_opt );
 		std::fill( work.begin(), work.end(), nan );
