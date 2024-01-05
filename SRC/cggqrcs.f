@@ -453,7 +453,7 @@
 *>  these _hints_. The column pre-processing does not influence the
 *>  accuracy of the results.
 *>
-*>  CGGQRCS should be significantly faster than SGGSVD3 for large
+*>  CGGQRCS should be significantly faster than CGGSVD3 for large
 *>  matrices because the matrices A and B are reduced to a pair of
 *>  well-conditioned bidiagonal matrices instead of pairs of upper
 *>  triangular matrices. On the downside, CGGQRCS requires a much larger
@@ -533,7 +533,7 @@
 *     .. External Subroutines ..
       EXTERNAL           CGEMM, CGEQP3, CGEQRF, CGETRP, CLACPY, CLAPMT,
      $                   CLASCL, CLASET, CUNCSD2BY1, CUNGQR, CUNMLQ,
-     $                   CUNMQR, XERBLA
+     $                   CUNMQR, CTRMM, XERBLA
 *     ..
 *     .. Intrinsic Functions ..
       INTRINSIC          ACOS, COS, ISNAN, MAX, MIN, SIN, SQRT
@@ -609,7 +609,7 @@
       BASE = SLAMCH( 'Base' )
       ULP = SLAMCH( 'Precision' )
       UNFL = SLAMCH( 'Safe Minimum' )
-      IF( TOL.LT.0.0E0 .AND. .NOT.LQUERY ) THEN
+      IF( TOL.LT.REALZERO .AND. .NOT.LQUERY ) THEN
          TOL = ULP
       ENDIF
 *
@@ -638,7 +638,7 @@
       PREPROCESSA =
      $ M.GT.N
      $ .OR. ( M.GT.0 .AND. .NOT.LSAME(HINTPREPA, 'N') )
-     $ .OR. NORMA.EQ.0.0E0
+     $ .OR. NORMA.EQ.REALZERO
       PREPROCESSB =
      $ P.GT.N
      $ .OR. ( P.GT.0 .AND. .NOT.LSAME(HINTPREPB, 'N') )
@@ -1299,6 +1299,7 @@
       END IF
 *
       WORK( 1 ) = REAL( LWKOPT )
+      RWORK( 1 ) = REAL( LRWKOPT )
       RETURN
 *
 *     End of CGGQRCS

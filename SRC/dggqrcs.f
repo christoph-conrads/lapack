@@ -436,7 +436,7 @@
 *>  these _hints_. The column pre-processing does not influence the
 *>  accuracy of the results.
 *>
-*>  DGGQRCS should be significantly faster than SGGSVD3 for large
+*>  DGGQRCS should be significantly faster than DGGSVD3 for large
 *>  matrices because the matrices A and B are reduced to a pair of
 *>  well-conditioned bidiagonal matrices instead of pairs of upper
 *>  triangular matrices. On the downside, DGGQRCS requires a much larger
@@ -513,7 +513,7 @@
 *     .. External Subroutines ..
       EXTERNAL           DGEMM, DGEQP3, DGEQRF, DGETRP, DLACPY, DLAPMT,
      $                   DLASCL, DLASET, DORGQR, DORCSD2BY1, DORMLQ,
-     $                   DORMQR, XERBLA
+     $                   DORMQR, DTRMM, XERBLA
 *     ..
 *     .. Intrinsic Functions ..
       INTRINSIC          ACOS, COS, ISNAN, MAX, MIN, SIN, SQRT
@@ -587,7 +587,7 @@
       BASE = DLAMCH( 'Base' )
       ULP = DLAMCH( 'Precision' )
       UNFL = DLAMCH( 'Safe Minimum' )
-      IF( TOL.LT.0.0E0 .AND. .NOT.LQUERY ) THEN
+      IF( TOL.LT.REALZERO .AND. .NOT.LQUERY ) THEN
          TOL = ULP
       ENDIF
 *
@@ -616,7 +616,7 @@
       PREPROCESSA =
      $ M.GT.N
      $ .OR. ( M.GT.0 .AND. .NOT.LSAME(HINTPREPA, 'N') )
-     $ .OR. NORMA.EQ.0.0E0
+     $ .OR. NORMA.EQ.REALZERO
       PREPROCESSB =
      $ P.GT.N
      $ .OR. ( P.GT.0 .AND. .NOT.LSAME(HINTPREPB, 'N') )

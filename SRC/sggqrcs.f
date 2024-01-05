@@ -513,7 +513,7 @@
 *     .. External Subroutines ..
       EXTERNAL           SGEMM, SGEQP3, SGEQRF, SGETRP, SLACPY, SLAPMT,
      $                   SLASCL, SLASET, SORCSD2BY1, SORGQR, SORMLQ,
-     $                   SORMQR, XERBLA
+     $                   SORMQR, STRMM, XERBLA
 *     ..
 *     .. Intrinsic Functions ..
       INTRINSIC          ACOS, COS, ISNAN, MAX, MIN, SIN, SQRT
@@ -587,7 +587,7 @@
       BASE = SLAMCH( 'Base' )
       ULP = SLAMCH( 'Precision' )
       UNFL = SLAMCH( 'Safe Minimum' )
-      IF( TOL.LT.0.0E0 .AND. .NOT.LQUERY ) THEN
+      IF( TOL.LT.REALZERO .AND. .NOT.LQUERY ) THEN
          TOL = ULP
       ENDIF
 *
@@ -616,7 +616,7 @@
       PREPROCESSA =
      $ M.GT.N
      $ .OR. ( M.GT.0 .AND. .NOT.LSAME(HINTPREPA, 'N') )
-     $ .OR. NORMA.EQ.0.0E0
+     $ .OR. NORMA.EQ.REALZERO
       PREPROCESSB =
      $ P.GT.N
      $ .OR. ( P.GT.0 .AND. .NOT.LSAME(HINTPREPB, 'N') )
