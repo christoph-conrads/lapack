@@ -30,6 +30,7 @@
 #include "xGGQRCS.hpp"
 #include "xGGSVD3.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <ctime>
 
@@ -1041,6 +1042,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(xGGQRCS_test_singular_values, Number, types)
 
 
 BOOST_TEST_DECORATOR(* boost::unit_test::disabled())
+/// Repeatedly call xGGQRCS with input matrices exhibit strong row scaling and
+/// print five-number summaries of the backward error.
 BOOST_AUTO_TEST_CASE_TEMPLATE(xGGQRCS_test_row_scaling, Number, types)
 {
 	using Real = typename tools::real_from<Number>::type;
@@ -1086,6 +1089,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(xGGQRCS_test_row_scaling, Number, types)
 			auto row_norms_a = ublas::vector<Real>(m, Real{0});
 			auto row_norms_b = ublas::vector<Real>(p, Real{0});
 
+			// compute max norm of every row
 			for(auto j = std::size_t{0}; j < n; ++j)
 			{
 				for(auto i = std::size_t{0}; i < m; ++i)
@@ -1094,6 +1098,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(xGGQRCS_test_row_scaling, Number, types)
 					row_norms_b(i) = std::max(row_norms_b(i), std::abs(B(i,j)));
 			}
 
+			// scale rows such that the first row has maximum norm 0, the last row
+			// has maximum kappa
 			auto kappa = std::ldexp(Real{1}, digits/2);
 			for(auto j = std::size_t{0}; j < n; ++j)
 			{
@@ -1104,6 +1110,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(xGGQRCS_test_row_scaling, Number, types)
 			}
 
 			auto caller = ggqrcs::Caller<Number>(m, n, p);
+			auto norm_a = ublas::norm_frobenius(A);
+			auto norm_b = ublas::norm_frobenius(B);
 
 			caller.A = A;
 			caller.B = B;
@@ -1111,8 +1119,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(xGGQRCS_test_row_scaling, Number, types)
 			auto ret = caller();
 			auto be_errors = check_results(ret, A, B, caller);
 
-			stats_be_a(it) = be_errors.first;
-			stats_be_b(it) = be_errors.second;
+			stats_be_a(it) = be_errors.first / (std::max({ m, n, p }) * norm_a);
+			stats_be_b(it) = be_errors.second / (std::max({ m, n, p }) * norm_b);
 		}
 		}
 		}
@@ -1418,7 +1426,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(switches, Number, types)
 
 	constexpr auto num_digits_2 = std::numeric_limits<Real>::digits;
 
-	auto gen = std::mt19937();
+	auto gen = std::mt19937(20240405);
 	auto seed_dist = std::uniform_int_distribution<std::uint64_t>(0);
 
 	gen.discard(1u << 17);
