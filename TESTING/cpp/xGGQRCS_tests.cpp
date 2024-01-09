@@ -2601,6 +2601,80 @@ BOOST_AUTO_TEST_CASE(regression_switches_20231226)
 #endif
 
 
+// Matrix A is inaccurate when optimizations are on and the code contains FMA4
+// instructions.
+// The problem can be avoided by compiling BLAS/SRC/sgemv.f with the
+// `-ffp-contract=off` flag or by disabling FMA (`-mno-fma -mno-fma4`).
+BOOST_AUTO_TEST_CASE(regression_switches_20240109)
+{
+	auto m = 4;
+	auto n = 5;
+	auto p = 4;
+	//auto rank_A = 2;
+	//auto rank_B = 3;
+	//auto rank_G = 5;
+	auto hintprepa = 'N';
+	auto hintprepb = 'N';
+	auto hintprepcols = 'N';
+	//auto w = std::ldexp(float{1}, 11);
+	//auto seed = 687822830u;
+
+	auto caller = ggqrcs::Caller<float>(m, n, p);
+	auto A = caller.A;
+	auto B = caller.B;
+
+	A(0, 0) = -1.228234741e+03;
+	A(0, 1) = -3.926374817e+01;
+	A(0, 2) = -7.065171387e+03;
+	A(0, 3) = +2.666662891e+04;
+	A(0, 4) = +1.932183789e+04;
+	A(1, 0) = +2.795048828e+03;
+	A(1, 1) = -5.566356812e+02;
+	A(1, 2) = +9.025947266e+03;
+	A(1, 3) = -3.554810938e+04;
+	A(1, 4) = -2.016102930e+04;
+	A(2, 0) = -1.109454004e+04;
+	A(2, 1) = -8.200556641e+03;
+	A(2, 2) = -8.091530273e+03;
+	A(2, 3) = +2.746268164e+04;
+	A(2, 4) = +1.388618359e+04;
+	A(3, 0) = -2.942973145e+03;
+	A(3, 1) = -1.481493164e+03;
+	A(3, 2) = -3.871124023e+03;
+	A(3, 3) = +1.440458008e+04;
+	A(3, 4) = +7.697737793e+03;
+	B(0, 0) = +1.285251465e+04;
+	B(0, 1) = +1.484784180e+03;
+	B(0, 2) = -3.879659668e+03;
+	B(0, 3) = +2.811796387e+03;
+	B(0, 4) = -1.277614648e+04;
+	B(1, 0) = +5.715941406e+03;
+	B(1, 1) = +6.548829346e+02;
+	B(1, 2) = -1.724442871e+03;
+	B(1, 3) = +1.284799194e+03;
+	B(1, 4) = -5.690834961e+03;
+	B(2, 0) = -4.446235352e+03;
+	B(2, 1) = -5.011452637e+02;
+	B(2, 2) = +1.339912354e+03;
+	B(2, 3) = -1.051421387e+03;
+	B(2, 4) = +4.440138672e+03;
+	B(3, 0) = +3.242603027e+03;
+	B(3, 1) = +3.580648804e+02;
+	B(3, 2) = -9.758657227e+02;
+	B(3, 3) = +8.134671021e+02;
+	B(3, 4) = -3.250209473e+03;
+
+	caller.A = A;
+	caller.B = B;
+	caller.hint_preprocess_a = hintprepa;
+	caller.hint_preprocess_b = hintprepb;
+	caller.hint_preprocess_cols = hintprepcols;
+
+	auto ret = caller();
+	check_results(ret, A, B, caller);
+}
+
+
 // expect failures because xLANGE overflows when it should not
 BOOST_TEST_DECORATOR(* boost::unit_test::expected_failures(3))
 BOOST_AUTO_TEST_CASE_TEMPLATE(
