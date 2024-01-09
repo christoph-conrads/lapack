@@ -2478,6 +2478,7 @@ BOOST_AUTO_TEST_CASE(regression_switches_20231125)
 
 
 // The re-assembled matrix B is inaccurate.
+#if BUILD_DOUBLE
 BOOST_AUTO_TEST_CASE(regression_switches_20231220)
 {
 	auto m = 4;
@@ -2540,10 +2541,12 @@ BOOST_AUTO_TEST_CASE(regression_switches_20231220)
 
 	BOOST_CHECK(!caller.swapped_p);
 }
+#endif
 
 
 // Check if lapack#965 was fixed (the DBBCSD termination criterion is too
 // loose).
+#if BUILD_DOUBLE
 BOOST_AUTO_TEST_CASE(regression_switches_20231226)
 {
 	auto m = 3;
@@ -2595,6 +2598,7 @@ BOOST_AUTO_TEST_CASE(regression_switches_20231226)
 
 	BOOST_CHECK(!caller.swapped_p);
 }
+#endif
 
 
 // expect failures because xLANGE overflows when it should not
