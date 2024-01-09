@@ -360,6 +360,14 @@ void print_matrix_to_file(const char* filename, const Matrix& a) {
 	}
 }
 
+template<class Real, class Storage>
+void print_matrix_to_file(const char*, const ublas::matrix<std::complex<Real>, Storage>&)
+{
+	assert(false);
+}
+
+
+
 template<class Matrix>
 void print_machine_readable_matrix(const char* identifier, const Matrix& a) {
 	using Number = typename Matrix::value_type;
@@ -372,6 +380,12 @@ void print_machine_readable_matrix(const char* identifier, const Matrix& a) {
 			std::printf(fmt, identifier, i, j, a(i, j));
 		}
 	}
+}
+
+template<class Real, class Storage>
+void print_machine_readable_matrix(const char*, const ublas::matrix<std::complex<Real>, Storage>&)
+{
+	assert(false);
 }
 
 }
