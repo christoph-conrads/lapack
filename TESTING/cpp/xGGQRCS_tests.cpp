@@ -2675,6 +2675,175 @@ BOOST_AUTO_TEST_CASE(regression_switches_20240109)
 }
 
 
+#if BUILD_COMPLEX
+// The computed matrix U1 is not unitary. This test checks if #980 is fixed.
+BOOST_AUTO_TEST_CASE(regression_switches_20240111)
+{
+	auto m = 3;
+	auto n = 17;
+	auto p = 5;
+	//auto rank_A = 1;
+	//auto rank_B = 4;
+	//auto rank_G = 4;
+	auto hintprepa = 'N';
+	auto hintprepb = '?';
+	auto hintprepcols = '?';
+	//auto w = std::ldexp(float{1}, 20);
+	//auto seed = 2446188959;
+
+	auto caller = ggqrcs::Caller<std::complex<float>>(m, n, p);
+	auto A = caller.A;
+	auto B = caller.B;
+
+	A(0, 0) = std::complex<float>{+1.194875754e-08, +8.332106560e-09};
+	A(0, 1) = std::complex<float>{-1.306989539e-08, +3.953539274e-09};
+	A(0, 2) = std::complex<float>{-2.467806226e-08, +3.112447189e-09};
+	A(0, 3) = std::complex<float>{+3.499887935e-09, -7.863016016e-09};
+	A(0, 4) = std::complex<float>{+1.852854936e-08, +1.598420596e-08};
+	A(0, 5) = std::complex<float>{+4.279410160e-09, +1.112045386e-10};
+	A(0, 6) = std::complex<float>{-2.786688658e-09, +3.457127029e-09};
+	A(0, 7) = std::complex<float>{+3.934952808e-09, +2.385050024e-08};
+	A(0, 8) = std::complex<float>{-3.700992934e-08, +5.648284063e-09};
+	A(0, 9) = std::complex<float>{+9.630168663e-09, -3.251763969e-09};
+	A(0, 10) = std::complex<float>{-8.524265738e-09, -1.608256106e-08};
+	A(0, 11) = std::complex<float>{+9.772083143e-10, -2.073638816e-09};
+	A(0, 12) = std::complex<float>{+1.681986284e-08, +1.827140927e-08};
+	A(0, 13) = std::complex<float>{+1.571591568e-08, +1.478386302e-08};
+	A(0, 14) = std::complex<float>{+1.531814853e-08, +2.240011909e-08};
+	A(0, 15) = std::complex<float>{+8.903383808e-09, -3.137405225e-09};
+	A(0, 16) = std::complex<float>{-1.770615299e-08, -4.673417653e-09};
+	A(1, 0) = std::complex<float>{+0.000000000e+00, +0.000000000e+00};
+	A(1, 1) = std::complex<float>{+0.000000000e+00, +0.000000000e+00};
+	A(1, 2) = std::complex<float>{+0.000000000e+00, +0.000000000e+00};
+	A(1, 3) = std::complex<float>{+0.000000000e+00, +0.000000000e+00};
+	A(1, 4) = std::complex<float>{+0.000000000e+00, +0.000000000e+00};
+	A(1, 5) = std::complex<float>{+0.000000000e+00, +0.000000000e+00};
+	A(1, 6) = std::complex<float>{+0.000000000e+00, +0.000000000e+00};
+	A(1, 7) = std::complex<float>{+0.000000000e+00, +0.000000000e+00};
+	A(1, 8) = std::complex<float>{+0.000000000e+00, +0.000000000e+00};
+	A(1, 9) = std::complex<float>{+0.000000000e+00, +0.000000000e+00};
+	A(1, 10) = std::complex<float>{+0.000000000e+00, +0.000000000e+00};
+	A(1, 11) = std::complex<float>{+0.000000000e+00, +0.000000000e+00};
+	A(1, 12) = std::complex<float>{+0.000000000e+00, +0.000000000e+00};
+	A(1, 13) = std::complex<float>{+0.000000000e+00, +0.000000000e+00};
+	A(1, 14) = std::complex<float>{+0.000000000e+00, +0.000000000e+00};
+	A(1, 15) = std::complex<float>{+0.000000000e+00, +0.000000000e+00};
+	A(1, 16) = std::complex<float>{+0.000000000e+00, +0.000000000e+00};
+	A(2, 0) = std::complex<float>{+0.000000000e+00, +0.000000000e+00};
+	A(2, 1) = std::complex<float>{+0.000000000e+00, +0.000000000e+00};
+	A(2, 2) = std::complex<float>{+0.000000000e+00, +0.000000000e+00};
+	A(2, 3) = std::complex<float>{+0.000000000e+00, +0.000000000e+00};
+	A(2, 4) = std::complex<float>{+0.000000000e+00, +0.000000000e+00};
+	A(2, 5) = std::complex<float>{+0.000000000e+00, +0.000000000e+00};
+	A(2, 6) = std::complex<float>{+0.000000000e+00, +0.000000000e+00};
+	A(2, 7) = std::complex<float>{+0.000000000e+00, +0.000000000e+00};
+	A(2, 8) = std::complex<float>{+0.000000000e+00, +0.000000000e+00};
+	A(2, 9) = std::complex<float>{+0.000000000e+00, +0.000000000e+00};
+	A(2, 10) = std::complex<float>{+0.000000000e+00, +0.000000000e+00};
+	A(2, 11) = std::complex<float>{+0.000000000e+00, +0.000000000e+00};
+	A(2, 12) = std::complex<float>{+0.000000000e+00, +0.000000000e+00};
+	A(2, 13) = std::complex<float>{+0.000000000e+00, +0.000000000e+00};
+	A(2, 14) = std::complex<float>{+0.000000000e+00, +0.000000000e+00};
+	A(2, 15) = std::complex<float>{+0.000000000e+00, +0.000000000e+00};
+	A(2, 16) = std::complex<float>{+0.000000000e+00, +0.000000000e+00};
+	B(0, 0) = std::complex<float>{+1.818949580e-01, +8.577816188e-02};
+	B(0, 1) = std::complex<float>{-1.776736677e-01, +3.486495465e-02};
+	B(0, 2) = std::complex<float>{-2.911468446e-01, +4.951077700e-02};
+	B(0, 3) = std::complex<float>{+2.806191146e-02, -7.971544564e-02};
+	B(0, 4) = std::complex<float>{+2.043907791e-01, +1.944999397e-01};
+	B(0, 5) = std::complex<float>{+4.371867701e-02, -4.528657533e-03};
+	B(0, 6) = std::complex<float>{-2.629459463e-02, +5.877896398e-02};
+	B(0, 7) = std::complex<float>{+5.311081931e-02, +3.060367405e-01};
+	B(0, 8) = std::complex<float>{-4.671534598e-01, +7.515439391e-02};
+	B(0, 9) = std::complex<float>{+1.168147177e-01, -2.909467556e-02};
+	B(0, 10) = std::complex<float>{-9.814943373e-02, -1.990181357e-01};
+	B(0, 11) = std::complex<float>{+1.449625660e-02, -1.860941015e-02};
+	B(0, 12) = std::complex<float>{+2.110473216e-01, +2.291240692e-01};
+	B(0, 13) = std::complex<float>{+1.999991983e-01, +1.933304965e-01};
+	B(0, 14) = std::complex<float>{+1.672540307e-01, +2.795472741e-01};
+	B(0, 15) = std::complex<float>{+9.984540939e-02, -4.487537965e-02};
+	B(0, 16) = std::complex<float>{-2.407555729e-01, -5.368231982e-02};
+	B(1, 0) = std::complex<float>{+4.675433338e-01, +2.133847922e-01};
+	B(1, 1) = std::complex<float>{+6.666499376e-02, -2.686135471e-02};
+	B(1, 2) = std::complex<float>{+1.132576615e-01, +1.463008672e-01};
+	B(1, 3) = std::complex<float>{-8.289061487e-02, -5.154715851e-02};
+	B(1, 4) = std::complex<float>{+2.184350193e-01, -1.667208076e-01};
+	B(1, 5) = std::complex<float>{-1.310719401e-01, -3.752505407e-02};
+	B(1, 6) = std::complex<float>{-1.100813225e-01, +6.334875524e-02};
+	B(1, 7) = std::complex<float>{-6.397628784e-02, -1.875767112e-01};
+	B(1, 8) = std::complex<float>{-7.507570833e-02, +9.015116096e-02};
+	B(1, 9) = std::complex<float>{-2.089363337e-01, +2.778300047e-01};
+	B(1, 10) = std::complex<float>{+2.151312530e-01, -2.600950189e-03};
+	B(1, 11) = std::complex<float>{-4.990564287e-02, +1.454896331e-01};
+	B(1, 12) = std::complex<float>{+2.754077688e-02, +1.531390399e-01};
+	B(1, 13) = std::complex<float>{-1.856179535e-01, +3.068177588e-02};
+	B(1, 14) = std::complex<float>{-2.257665545e-01, -1.851593852e-01};
+	B(1, 15) = std::complex<float>{+7.963336073e-03, -3.572522402e-01};
+	B(1, 16) = std::complex<float>{-1.995908469e-01, -9.439890832e-02};
+	B(2, 0) = std::complex<float>{+1.524101645e-01, +1.335051358e-01};
+	B(2, 1) = std::complex<float>{-5.431874841e-02, -4.036663771e-01};
+	B(2, 2) = std::complex<float>{-3.502885997e-02, +1.909589022e-01};
+	B(2, 3) = std::complex<float>{-3.296357393e-01, +5.620167777e-02};
+	B(2, 4) = std::complex<float>{-4.654248655e-01, -2.339908183e-01};
+	B(2, 5) = std::complex<float>{+7.255034149e-02, -1.858852208e-01};
+	B(2, 6) = std::complex<float>{-1.673124433e-01, +1.900432110e-01};
+	B(2, 7) = std::complex<float>{+8.420689404e-02, +2.473311871e-01};
+	B(2, 8) = std::complex<float>{-1.261931658e-01, +3.765748069e-02};
+	B(2, 9) = std::complex<float>{-3.791573644e-02, -1.001077890e-01};
+	B(2, 10) = std::complex<float>{-1.771447510e-01, +1.392536163e-01};
+	B(2, 11) = std::complex<float>{-8.322905749e-02, -6.445494294e-02};
+	B(2, 12) = std::complex<float>{-1.000756174e-01, -1.408549957e-02};
+	B(2, 13) = std::complex<float>{+8.933010697e-02, +6.627239287e-02};
+	B(2, 14) = std::complex<float>{-5.697251111e-02, -1.764536053e-01};
+	B(2, 15) = std::complex<float>{-4.930107296e-02, +1.843466908e-01};
+	B(2, 16) = std::complex<float>{-2.465862408e-02, -5.925126001e-02};
+	B(3, 0) = std::complex<float>{-5.189919844e-03, -8.944274485e-02};
+	B(3, 1) = std::complex<float>{-4.136925936e-02, +5.181664228e-02};
+	B(3, 2) = std::complex<float>{+1.312773209e-02, -2.751220018e-05};
+	B(3, 3) = std::complex<float>{+2.047152072e-02, +2.713666856e-02};
+	B(3, 4) = std::complex<float>{+4.644222558e-03, +3.691300005e-02};
+	B(3, 5) = std::complex<float>{-1.031439658e-02, +1.562404074e-02};
+	B(3, 6) = std::complex<float>{+5.322863162e-02, +2.466405183e-02};
+	B(3, 7) = std::complex<float>{+2.570834570e-02, -3.587326035e-03};
+	B(3, 8) = std::complex<float>{+4.206535593e-02, +4.619801417e-02};
+	B(3, 9) = std::complex<float>{+3.855186328e-02, -1.760597713e-02};
+	B(3, 10) = std::complex<float>{-1.397722214e-02, +4.066942260e-03};
+	B(3, 11) = std::complex<float>{+1.208538935e-02, +7.561557926e-03};
+	B(3, 12) = std::complex<float>{+5.181825534e-02, -2.504808828e-02};
+	B(3, 13) = std::complex<float>{+3.584899381e-02, -1.391138695e-02};
+	B(3, 14) = std::complex<float>{+2.476208843e-02, +3.511463478e-02};
+	B(3, 15) = std::complex<float>{-1.547440886e-03, +8.448423818e-03};
+	B(3, 16) = std::complex<float>{+2.227667719e-04, +3.614605963e-02};
+	B(4, 0) = std::complex<float>{+3.247623518e-02, +1.492051184e-01};
+	B(4, 1) = std::complex<float>{-1.314382702e-01, -5.953007936e-02};
+	B(4, 2) = std::complex<float>{-1.003798321e-01, -1.666477323e-01};
+	B(4, 3) = std::complex<float>{+7.365968823e-02, -9.861856699e-02};
+	B(4, 4) = std::complex<float>{+2.992148325e-02, +3.025356680e-02};
+	B(4, 5) = std::complex<float>{-1.865671948e-04, +6.289017946e-02};
+	B(4, 6) = std::complex<float>{-3.737561107e-01, +2.557869554e-01};
+	B(4, 7) = std::complex<float>{-9.868086874e-02, -2.527489662e-01};
+	B(4, 8) = std::complex<float>{+2.191712707e-01, +3.720227480e-01};
+	B(4, 9) = std::complex<float>{+2.558549345e-01, +1.480683535e-01};
+	B(4, 10) = std::complex<float>{-1.762964427e-01, +3.607146814e-02};
+	B(4, 11) = std::complex<float>{-1.471409798e-01, +6.357124541e-03};
+	B(4, 12) = std::complex<float>{+1.580038518e-01, +2.838836908e-01};
+	B(4, 13) = std::complex<float>{-9.689522535e-02, -2.993879654e-02};
+	B(4, 14) = std::complex<float>{+5.575549230e-02, +4.319803044e-02};
+	B(4, 15) = std::complex<float>{+9.327121824e-02, +1.895956397e-01};
+	B(4, 16) = std::complex<float>{+3.504148126e-01, -2.445783094e-02};
+
+	caller.A = A;
+	caller.B = B;
+	caller.hint_preprocess_a = hintprepa;
+	caller.hint_preprocess_b = hintprepb;
+	caller.hint_preprocess_cols = hintprepcols;
+
+	auto ret = caller();
+	check_results(ret, A, B, caller);
+}
+#endif
+
+
 // expect failures because xLANGE overflows when it should not
 BOOST_TEST_DECORATOR(* boost::unit_test::expected_failures(3))
 BOOST_AUTO_TEST_CASE_TEMPLATE(
