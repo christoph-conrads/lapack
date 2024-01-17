@@ -85,9 +85,4 @@ using supported_complex_types =
 
 }
 
-#undef BUILD_SINGLE
-#undef BUILD_DOUBLE
-#undef BUILD_COMPLEX
-#undef BUILD_COMPLEX16
-
 #endif
