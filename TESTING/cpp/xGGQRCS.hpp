@@ -452,6 +452,8 @@ struct Caller
 		auto lwork_opt =
 			static_cast<std::size_t>(std::real(lwork_opt_f));
 
+		BOOST_REQUIRE_GT( lwork_opt, 0 );
+
 		work.resize( lwork_opt );
 		std::fill( work.begin(), work.end(), nan );
 
@@ -596,8 +598,27 @@ struct Caller<std::complex<Real>>
 		BOOST_VERIFY( !std::isnan(tol) );
 		BOOST_VERIFY( tol <= 1 );
 
-		auto nan = tools::not_a_number<Number>::value;
-		auto real_nan = tools::not_a_number<Real>::value;
+		for(auto j = std::size_t{0}; j < A.size2(); ++j)
+		{
+			for(auto i = m; i < A.size1(); ++i)
+			{
+				A(i, j) = tools::not_a_number<Number>::value;
+			}
+		}
+		for(auto j = std::size_t{0}; j < B.size2(); ++j)
+		{
+			for(auto i = p; i < B.size1(); ++i)
+			{
+				B(i, j) = tools::not_a_number<Number>::value;
+			}
+		}
+	}
+
+
+	Integer operator() ()
+	{
+		constexpr auto nan = tools::not_a_number<Number>::value;
+		constexpr auto real_nan = tools::not_a_number<Real>::value;
 
 		// query workspace sizes
 		auto jobu1 = bool2lapackjob(compute_u1_p);
@@ -605,7 +626,6 @@ struct Caller<std::complex<Real>>
 		auto jobx = bool2lapackjob(compute_x_p);
 		auto lwork_opt_f = nan;
 		auto lrwork_opt_f = real_nan;
-		auto rank = Integer{-1};
 		auto ret = lapack::xGGQRCS(
 			jobu1, jobu2, jobx,
 			&hint_preprocess_a, &hint_preprocess_b, &hint_preprocess_cols,
@@ -617,6 +637,7 @@ struct Caller<std::complex<Real>>
 			&lwork_opt_f, -1, &lrwork_opt_f, 1, &iwork(0) );
 		BOOST_REQUIRE_EQUAL( ret, 0 );
 
+		// resize workspace accordingly
 		auto lwork_opt = static_cast<std::size_t>(std::real(lwork_opt_f));
 		auto lrwork_opt = static_cast<std::size_t>(std::real(lrwork_opt_f));
 
@@ -628,15 +649,8 @@ struct Caller<std::complex<Real>>
 
 		rwork.resize( lrwork_opt );
 		std::fill( rwork.begin(), rwork.end(), real_nan );
-	}
 
-
-	Integer operator() ()
-	{
-		auto jobu1 = bool2lapackjob(compute_u1_p);
-		auto jobu2 = bool2lapackjob(compute_u2_p);
-		auto jobx = bool2lapackjob(compute_x_p);
-		return lapack::xGGQRCS(
+		ret = lapack::xGGQRCS(
 			jobu1, jobu2, jobx,
 			&hint_preprocess_a, &hint_preprocess_b, &hint_preprocess_cols,
 			m, n, p, &rank, &swapped_p,
@@ -650,6 +664,48 @@ struct Caller<std::complex<Real>>
 			&rwork(0), rwork.size(),
 			&iwork(0)
 		);
+
+		// check for out-of-bounds accesses
+		for(auto j = std::size_t{0}; j < A.size2(); ++j)
+		{
+			for(auto i = m; i < A.size1(); ++i)
+			{
+				BOOST_REQUIRE(tools::nan_p(A(i, j)));
+			}
+		}
+		for(auto j = std::size_t{0}; j < B.size2(); ++j)
+		{
+			for(auto i = p; i < B.size1(); ++i)
+			{
+				BOOST_REQUIRE(tools::nan_p(B(i, j)));
+			}
+		}
+		for(auto j = std::size_t{0}; j < U1.size2(); ++j)
+		{
+			for(auto i = m; i < U1.size1(); ++i)
+			{
+				BOOST_REQUIRE(tools::nan_p(U1(i, j)));
+			}
+		}
+		for(auto j = std::size_t{0}; j < U2.size2(); ++j)
+		{
+			for(auto i = p; i < U2.size1(); ++i)
+			{
+				BOOST_REQUIRE(tools::nan_p(U2(i, j)));
+			}
+		}
+		for(auto j = std::size_t{0}; j < X.size2(); ++j)
+		{
+			// TODO: share code estimating the maximum possible rank with
+			// constructor
+			auto rank_g_max = std::min(m + p, n);
+			for(auto i = rank_g_max; i < X.size1(); ++i)
+			{
+				BOOST_REQUIRE(tools::nan_p(X(i, j)));
+			}
+		}
+
+		return ret;
 	}
 };
 
