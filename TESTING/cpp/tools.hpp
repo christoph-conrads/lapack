@@ -231,6 +231,15 @@ bool is_almost_isometric(
 }
 
 
+// std::conj re-implementations that do not forcefully return std::complex
+float conj(float f) { return f; }
+double conj(double f) { return f; }
+
+template<typename T>
+std::complex<T> conj(std::complex<T>& z) {
+	return std::conj(z);
+}
+
 
 /**
  * @return Matrix A with m rows, n columns, and A^* A = I.
@@ -252,6 +261,18 @@ ublas::matrix<Number, Storage> make_isometric_matrix_like(
 	if(p <= 1)
 		return ublas::identity_matrix<Number, Storage>(m, n);
 
+	// Approach:
+	// 1. Generate a random matrix whose entries are identically and
+	// independently distributed with mean 0 and variance 1.
+	// 2. Compute the QR factorization.
+	// 3. Ensure a unique QR decomposition: compute a unitary diagonal matrix D
+	//    such that DR has only positive real-valued entries on its diagonal
+	//    (the i-th diagonal entry is `|r(i,i)| / r(i,i)`).
+	// 4. Return Q D^*.
+	//
+	// References:
+	// Francesco Mezzadri: "How to generate random matrices from the classical
+	// compact groups". 2007. URL: http://arXiv.org/abs/math-ph/0609050v2
 	auto dist = UniformDistribution<Number>();
 	auto rand = [gen, &dist] () { return dist(*gen); };
 	auto A = Matrix(m, n);
@@ -267,10 +288,25 @@ ublas::matrix<Number, Storage> make_isometric_matrix_like(
 
 	BOOST_VERIFY( ret == 0 );
 
+	// save the diagonal entries of R
+	auto r_diagonal = ublas::vector<Number>(n, nan);
+	for(auto j = std::size_t{0}; j < n; ++j) {
+		r_diagonal(j) = A(j,j);
+	}
+
+	// explicitly form Q
 	ret = lapack::xUNGQR(m, n, n, &A(0,0), m, &tau(0), &work(0), lwork);
 
 	BOOST_VERIFY( ret == 0 );
 	BOOST_VERIFY( is_almost_isometric(A) );
+
+	// compute Q D^*
+	for(auto j = std::size_t{0}; j < n; ++j) {
+		auto column_multiplier = std::abs(r_diagonal(j)) / conj(r_diagonal(j));
+		for(auto i = std::size_t{0}; i < m; ++i) {
+			A(i, j) *= column_multiplier;
+		}
+	}
 
 	return A;
 }
