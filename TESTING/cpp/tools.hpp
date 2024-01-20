@@ -402,6 +402,11 @@ ublas::matrix<Number, Storage> make_isometric_matrix_like(
 
 	// compute Q D^*
 	for(auto j = std::size_t{0}; j < n; ++j) {
+		// exact zeros are known to occur in single-precision arithmetic
+		if(r_diagonal(j) == 0) {
+			continue;
+		}
+
 		auto column_multiplier = std::abs(r_diagonal(j)) / conj(r_diagonal(j));
 		for(auto i = std::size_t{0}; i < m; ++i) {
 			A(i, j) *= column_multiplier;
