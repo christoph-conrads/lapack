@@ -166,6 +166,106 @@ struct UniformDistribution<std::complex<Real>>
 };
 
 
+template<class Matrix>
+void print_matrix(const char* name, const Matrix& a) {
+	std::printf("%s\n", name);
+
+	for(auto i = std::size_t{0}; i < a.size1(); ++i) {
+		for(auto j = std::size_t{0}; j < a.size2(); ++j) {
+			if(j + 1 < a.size2()) {
+				std::printf("%+8.2e ", a(i, j));
+			}
+			else {
+				std::printf("%+8.2e\n", a(i, j));
+			}
+		}
+	}
+}
+
+
+template<class Matrix>
+void print_matrix_to_file(const char* filename, const Matrix& a) {
+	using Number = typename Matrix::value_type;
+	constexpr const char* fmt = std::is_same<Number, float>::value
+		? "%+16.9e%s"
+		: "%+24.17e%s";
+
+	auto f = std::fopen(filename, "w");
+	if(!f) {
+		std::perror("fopen");
+		std::exit(EXIT_FAILURE);
+	}
+
+	for(auto i = std::size_t{0}; i < a.size1(); ++i) {
+		for(auto j = std::size_t{0}; j < a.size2(); ++j) {
+			const char* sep = (j + 1 < a.size2()) ? " " : "\n";
+			std::fprintf(f, fmt, a(i, j), sep);
+		}
+	}
+
+	if(fclose(f) < 0) {
+		std::perror("fclose");
+		std::exit(EXIT_FAILURE);
+	}
+}
+
+template<class Real, class Storage>
+void print_matrix_to_file(
+	const char* filename, const ublas::matrix<std::complex<Real>, Storage>& a
+) {
+	constexpr const char* fmt = std::is_same<Real, float>::value
+		? "(%+16.9e%+16.9ej)%s"
+		: "(%+24.17e %+24.17ej)%s";
+
+	auto f = std::fopen(filename, "w");
+	if(!f) {
+		std::perror("fopen");
+		std::exit(EXIT_FAILURE);
+	}
+
+	for(auto i = std::size_t{0}; i < a.size1(); ++i) {
+		for(auto j = std::size_t{0}; j < a.size2(); ++j) {
+			const char* sep = (j + 1 < a.size2()) ? " " : "\n";
+			std::fprintf(f, fmt, a(i, j).real(), a(i, j).imag(), sep);
+		}
+	}
+
+	if(fclose(f) < 0) {
+		std::perror("fclose");
+		std::exit(EXIT_FAILURE);
+	}
+}
+
+
+template<class Matrix>
+void print_machine_readable_matrix(const char* identifier, const Matrix& a) {
+	using Number = typename Matrix::value_type;
+	constexpr const char* fmt = std::is_same<Number, float>::value
+		? "%s(%zu, %zu) = %+16.9e;\n"
+		: "%s(%zu, %zu) = %+24.17e;\n";
+
+	for(auto i = std::size_t{0}; i < a.size1(); ++i) {
+		for(auto j = std::size_t{0}; j < a.size2(); ++j) {
+			std::printf(fmt, identifier, i, j, a(i, j));
+		}
+	}
+}
+
+template<class Real, class Storage>
+void print_machine_readable_matrix(
+		const char* identifier,
+		const ublas::matrix<std::complex<Real>, Storage>& a
+) {
+	constexpr const char* fmt = std::is_same<Real, float>::value
+		? "%s(%zu, %zu) = std::complex<float>{%+16.9e, %+16.9e};\n"
+		: "%s(%zu, %zu) = std::complex<double>{%+24.17e, %+24.17e};\n";
+
+	for(auto i = std::size_t{0}; i < a.size1(); ++i) {
+		for(auto j = std::size_t{0}; j < a.size2(); ++j) {
+			std::printf(fmt, identifier, i, j, a(i, j).real(), a(i, j).imag());
+		}
+	}
+}
 
 /**
  * @return The Frobenius norm of U* U - I
@@ -351,107 +451,6 @@ ublas::matrix<Number, ublas::column_major> make_matrix_like(
 	);
 
 	return A;
-}
-
-
-template<class Matrix>
-void print_matrix(const char* name, const Matrix& a) {
-	std::printf("%s\n", name);
-
-	for(auto i = std::size_t{0}; i < a.size1(); ++i) {
-		for(auto j = std::size_t{0}; j < a.size2(); ++j) {
-			if(j + 1 < a.size2()) {
-				std::printf("%+8.2e ", a(i, j));
-			}
-			else {
-				std::printf("%+8.2e\n", a(i, j));
-			}
-		}
-	}
-}
-
-template<class Matrix>
-void print_matrix_to_file(const char* filename, const Matrix& a) {
-	using Number = typename Matrix::value_type;
-	constexpr const char* fmt = std::is_same<Number, float>::value
-		? "%+16.9e%s"
-		: "%+24.17e%s";
-
-	auto f = std::fopen(filename, "w");
-	if(!f) {
-		std::perror("fopen");
-		std::exit(EXIT_FAILURE);
-	}
-
-	for(auto i = std::size_t{0}; i < a.size1(); ++i) {
-		for(auto j = std::size_t{0}; j < a.size2(); ++j) {
-			const char* sep = (j + 1 < a.size2()) ? " " : "\n";
-			std::fprintf(f, fmt, a(i, j), sep);
-		}
-	}
-
-	if(fclose(f) < 0) {
-		std::perror("fclose");
-		std::exit(EXIT_FAILURE);
-	}
-}
-
-template<class Real, class Storage>
-void print_matrix_to_file(
-	const char* filename, const ublas::matrix<std::complex<Real>, Storage>& a
-) {
-	constexpr const char* fmt = std::is_same<Real, float>::value
-		? "(%+16.9e%+16.9ej)%s"
-		: "(%+24.17e %+24.17ej)%s";
-
-	auto f = std::fopen(filename, "w");
-	if(!f) {
-		std::perror("fopen");
-		std::exit(EXIT_FAILURE);
-	}
-
-	for(auto i = std::size_t{0}; i < a.size1(); ++i) {
-		for(auto j = std::size_t{0}; j < a.size2(); ++j) {
-			const char* sep = (j + 1 < a.size2()) ? " " : "\n";
-			std::fprintf(f, fmt, a(i, j).real(), a(i, j).imag(), sep);
-		}
-	}
-
-	if(fclose(f) < 0) {
-		std::perror("fclose");
-		std::exit(EXIT_FAILURE);
-	}
-}
-
-
-template<class Matrix>
-void print_machine_readable_matrix(const char* identifier, const Matrix& a) {
-	using Number = typename Matrix::value_type;
-	constexpr const char* fmt = std::is_same<Number, float>::value
-		? "%s(%zu, %zu) = %+16.9e;\n"
-		: "%s(%zu, %zu) = %+24.17e;\n";
-
-	for(auto i = std::size_t{0}; i < a.size1(); ++i) {
-		for(auto j = std::size_t{0}; j < a.size2(); ++j) {
-			std::printf(fmt, identifier, i, j, a(i, j));
-		}
-	}
-}
-
-template<class Real, class Storage>
-void print_machine_readable_matrix(
-		const char* identifier,
-		const ublas::matrix<std::complex<Real>, Storage>& a
-) {
-	constexpr const char* fmt = std::is_same<Real, float>::value
-		? "%s(%zu, %zu) = std::complex<float>{%+16.9e, %+16.9e};\n"
-		: "%s(%zu, %zu) = std::complex<double>{%+24.17e, %+24.17e};\n";
-
-	for(auto i = std::size_t{0}; i < a.size1(); ++i) {
-		for(auto j = std::size_t{0}; j < a.size2(); ++j) {
-			std::printf(fmt, identifier, i, j, a(i, j).real(), a(i, j).imag());
-		}
-	}
 }
 
 }
