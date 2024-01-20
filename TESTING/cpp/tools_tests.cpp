@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016, 2019, 2020 Christoph Conrads
+ * Copyright (c) 2016, 2019, 2020, 2024 Christoph Conrads
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -120,4 +120,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(xGEMM_test, Number, types)
 			BOOST_CHECK_LE( ublas::norm_frobenius(C-D), m*n*norm_C * eps );
 		}
 	}
+}
+
+
+/// Check if zero divisors are avoided in make_isometric_matrix_like.
+BOOST_AUTO_TEST_CASE(avoid_zero_divisor) {
+	auto gen = std::mt19937(914119670u);
+
+	gen.discard(2);
+	auto u = tools::make_isometric_matrix_like(float{0}, 3, 3, &gen);
+	auto tol = tools::measure_isometry(u);
+	auto eps = std::numeric_limits<float>::epsilon();
+
+	BOOST_CHECK(tol <= 3 * eps);
 }
