@@ -403,7 +403,7 @@ ublas::matrix<Number, Storage> make_isometric_matrix_like(
 	// compute Q D^*
 	for(auto j = std::size_t{0}; j < n; ++j) {
 		// exact zeros are known to occur in single-precision arithmetic
-		if(r_diagonal(j) == 0) {
+		if(std::abs(r_diagonal(j)) == 0) {
 			continue;
 		}
 
