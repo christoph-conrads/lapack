@@ -129,6 +129,13 @@ if("${isSystemDir}" STREQUAL "-1")
 endif()
 
 
+# Enable C++ code?
+option(BUILD_CPLUSPLUS "Build LAPACK C++ code" OFF)
+IF(BUILD_CPLUSPLUS)
+  add_subdirectory(LAPACK_CPP)
+ENDIF()
+
+
 # Configure the warning and code coverage suppression file
 configure_file(
   "${LAPACK_SOURCE_DIR}/CTestCustom.cmake.in"
